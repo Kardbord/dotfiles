@@ -12,3 +12,5 @@ set expandtab
 set background=dark
 
 autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
+
+syntax on

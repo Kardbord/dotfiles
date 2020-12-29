@@ -1,4 +1,4 @@
-# vimrc
-My preferred vim configuration.
+# dotfiles
+My preferred dotfile configurations for various things.
 
-Place `.vimrc` under `~/`.
+Place desired dotfiles under `~/`.

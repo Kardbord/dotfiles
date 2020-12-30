@@ -1,0 +1,6 @@
+--align-pointer=name
+--style=attach
+--indent=spaces=4
+--pad-oper
+--convert-tabs
+--max-code-length=100

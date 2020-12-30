@@ -121,6 +121,7 @@ if ! shopt -oq posix; then
   fi
 fi
 
+# use a vi-style line editing interface
 set -o vi
 
 if [ -d "$HOME/.cargo" -a -f "$HOME/.cargo/env" ]; then

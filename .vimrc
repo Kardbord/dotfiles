@@ -19,6 +19,8 @@ syntax on
 
 set foldmethod=syntax
 
+set cursorline
+
 " Don't screw up folds when inserting text that might affect them, until
 " leaving insert mode. Foldmethod is local to the window. Protect against
 " screwing up folding when switching between windows.

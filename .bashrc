@@ -60,8 +60,8 @@ if [ "$color_prompt" = yes ]; then
   curl --max-time 3 -o ~/.git-prompt.sh https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh &>/dev/null
   if [ -f ~/.git-prompt.sh ]; then
     source ~/.git-prompt.sh
-    PROMPT_BEFORE="\[\033[38;5;82m\][\[$(tput sgr0)\]\[\033[38;5;9m\]\u\[$(tput sgr0)\]\[\033[38;5;6m\]@\[$(tput sgr0)\]\[\033[38;5;13m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]\[\033[38;5;14m\]\A\[$(tput sgr0)\]"
-    PROMPT_AFTER="\[\033[38;5;15m\] \[$(tput sgr0)\]\[\033[38;5;226m\]\w\[$(tput sgr0)\]\[\033[38;5;82m\]]\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]"
+    PROMPT_BEFORE="\[\033[32m\][\[$(tput sgr0)\]\[\033[38;5;9m\]\u\[$(tput sgr0)\]\[\033[38;5;6m\]@\[$(tput sgr0)\]\[\033[38;5;13m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]\[\033[38;5;14m\]\A\[$(tput sgr0)\]"
+    PROMPT_AFTER="\[\033[38;5;15m\] \[$(tput sgr0)\]\[\033[38;5;226m\]\w\[$(tput sgr0)\]\[\033[32m\]]\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]"
     PROMPT_COMMAND='__git_ps1 "$PROMPT_BEFORE" "$PROMPT_AFTER"'
     # See ~/.git-prompt.sh
     export GIT_PS1_SHOWDIRTYSTATE=

@@ -107,6 +107,10 @@ alias lla='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
 
+# Add an "alert" alias for long running commands.  Use like so:
+#   sleep 10; alert
+alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+
 if [ -f ~/.bash_env ]; then
   source ~/.bash_env
 fi
@@ -133,6 +137,10 @@ fi
 
 set -o vi
 
+if [ -d "$HOME/.cargo" -a -f "$HOME/.cargo/env" ]; then
+  source "$HOME/.cargo/env"
+fi
+
 if command -v tmux &> /dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
   exec tmux -u
 fi
@@ -142,3 +150,5 @@ if command -v fastfetch &> /dev/null; then
 elif command -v neofetch &> /dev/null; then
   neofetch
 fi
+
+[[ $(pwd) =~ ^.*MobaXterm.* ]] && cd

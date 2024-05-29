@@ -59,7 +59,14 @@ fi
 if [ "$color_prompt" = yes ]; then
   if [[ -x "${GOPATH}/bin/powerline-go" ]] && true; then # Change to false to disable powerline-go
     function _update_ps1_powerline_go {
-      PS1="$($GOPATH/bin/powerline-go -error $? -jobs $(jobs -p | wc -l))"
+      PS1="$($GOPATH/bin/powerline-go \
+        -error $? \
+        -jobs $(jobs -p | wc -l) \
+        -colorize-hostname \
+        -cwd-mode semifancy \
+        -git-mode compact \
+        -modules "venv,docker,docker-context,time,user,host,cwd,perms,git,hg,jobs,exit,root" \
+        )"
     }
     PROMPT_COMMAND="_update_ps1_powerline_go; ${PROMPT_COMMAND}"
   elif wget -T 5 -O ~/.git-prompt.sh https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh &>/dev/null || [ -f ~/.git-prompt.sh ]; then

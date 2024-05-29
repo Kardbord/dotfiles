@@ -1,1 +1,3 @@
-return {}
+return {
+  'farmergreg/vim-lastplace',
+}

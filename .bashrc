@@ -57,8 +57,12 @@ if [ -n "$force_color_prompt" ]; then
 fi
 
 if [ "$color_prompt" = yes ]; then
-  wget -T 5 -O ~/.git-prompt.sh https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh &>/dev/null
-  if [ -f ~/.git-prompt.sh ]; then
+  if [[ -x "${GOPATH}/bin/powerline-go" ]] && true; then # Change to false to disable powerline-go
+    function _update_ps1_powerline_go {
+      PS1="$($GOPATH/bin/powerline-go -error $? -jobs $(jobs -p | wc -l))"
+    }
+    PROMPT_COMMAND="_update_ps1_powerline_go; ${PROMPT_COMMAND}"
+  elif wget -T 5 -O ~/.git-prompt.sh https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh &>/dev/null || [ -f ~/.git-prompt.sh ]; then
     source ~/.git-prompt.sh
     PROMPT_BEFORE="\[\033[32m\][\[$(tput sgr0)\]\[\033[38;5;9m\]\u\[$(tput sgr0)\]\[\033[38;5;6m\]@\[$(tput sgr0)\]\[\033[38;5;13m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]\[\033[38;5;14m\]\A\[$(tput sgr0)\]"
     PROMPT_AFTER="\[\033[38;5;15m\] \[$(tput sgr0)\]\[\033[38;5;226m\]\w\[$(tput sgr0)\]\[\033[32m\]]\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]"

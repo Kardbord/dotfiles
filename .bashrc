@@ -141,6 +141,22 @@ if [ -d "$HOME/.cargo" -a -f "$HOME/.cargo/env" ]; then
   source "$HOME/.cargo/env"
 fi
 
+if [[ -d "${HOME}/bin" ]]; then
+  export PATH="${PATH}:${HOME}/bin"
+fi
+if [[ -d "/usr/local/go/bin" ]]; then
+  export PATH="${PATH}:/usr/local/go/bin"
+fi
+if [[ -d "${HOME}/.cargo/bin" ]]; then
+  export PATH="${PATH}:${HOME}/.cargo/bin"
+fi
+if [[ -d "/opt/nvim/bin" ]]; then
+  export PATH="${PATH}:/opt/nvim/bin"
+fi
+if [[ -d "/opt/zeek/bin" ]]; then
+  export PATH="${PATH}:/opt/zeek/bin"
+fi
+
 if command -v tmux &> /dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
   exec tmux -u
 fi

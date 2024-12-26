@@ -217,6 +217,18 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
+-- Show linters for the current buffer's file type
+vim.api.nvim_create_user_command('LintInfo', function()
+  local filetype = vim.bo.filetype
+  local linters = require('lint').linters_by_ft[filetype]
+
+  if linters then
+    print('Linters for ' .. filetype .. ': ' .. table.concat(linters, ', '))
+  else
+    print('No linters configured for filetype: ' .. filetype)
+  end
+end, {})
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -251,7 +263,7 @@ require('lazy').setup({
   --    require('Comment').setup({})
 
   -- "gc" to comment visual regions/lines
-  { 'numToStr/Comment.nvim',    opts = {} },
+  { 'numToStr/Comment.nvim', opts = {} },
 
   -- Here is a more advanced example where we pass configuration
   -- options to `gitsigns.nvim`. This is equivalent to the following Lua:
@@ -286,7 +298,7 @@ require('lazy').setup({
   -- after the plugin has been loaded:
   --  config = function() ... end
 
-  {                     -- Useful plugin to show you pending keybinds.
+  { -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
     config = function() -- This is the function that runs, AFTER loading
@@ -338,7 +350,7 @@ require('lazy').setup({
       { 'nvim-telescope/telescope-ui-select.nvim' },
 
       -- Useful for getting pretty icons, but requires a Nerd Font.
-      { 'nvim-tree/nvim-web-devicons',            enabled = vim.g.have_nerd_font },
+      { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
     },
     config = function()
       -- Telescope is a fuzzy finder that comes with a lot of different things that
@@ -431,11 +443,11 @@ require('lazy').setup({
 
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-      { 'j-hui/fidget.nvim',       opts = {} },
+      { 'j-hui/fidget.nvim', opts = {} },
 
       -- `neodev` configures Lua LSP for your Neovim config, runtime and plugins
       -- used for completion, annotations and signatures of Neovim apis
-      { 'folke/neodev.nvim',       opts = {} },
+      { 'folke/neodev.nvim', opts = {} },
     },
     config = function()
       -- Brief aside: **What is LSP?**
@@ -588,24 +600,47 @@ require('lazy').setup({
         -- tsserver = {},
         --
 
+        ['ansible-lint'] = {},
+        ['clang-format'] = {},
+        ['go-debug-adapter'] = {},
+        ['zeek-language-server'] = {},
         ansiblels = {},
+        autopep8 = {},
         awk_ls = {},
         bashls = {},
         clangd = {},
         cmake = {},
+        cmakelint = {},
+        delve = {},
         docker_compose_language_service = {},
         dockerls = {},
         eslint = {},
+        gitlint = {},
         gopls = {},
+        hadolint = {},
         html = {},
+        jinja_lsp = {},
         jqls = {},
+        jsonlint = {},
         jsonls = {},
+        luaformatter = {},
         markdown_oxide = {},
+        markdownlint = {},
         powershell_es = {},
+        pylint = {},
         pyright = {},
+        r_language_server = {},
         rust_analyzer = {},
+        shellcheck = {},
+        shellharden = {},
         sqls = {},
+        stylua = {},
+        systemdlint = {},
+        vale = {},
         vimls = {},
+        xmlformatter = {},
+        yamlfmt = {},
+        yamllint = {},
         yamlls = {},
         lua_ls = {
           -- cmd = {...},

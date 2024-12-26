@@ -1,12 +1,21 @@
 return {
-
   { -- Linting
     'mfussenegger/nvim-lint',
     event = { 'BufReadPre', 'BufNewFile' },
     config = function()
       local lint = require 'lint'
-      lint.linters_by_ft = {}
       lint.linters_by_ft = lint.linters_by_ft or {}
+      --lint.linters_by_ft['markdown'] = { 'markdownlint', 'vale' }
+      lint.linters_by_ft['markdown'] = { 'markdownlint' }
+      lint.linters_by_ft['cmake'] = { 'cmakelint' }
+      lint.linters_by_ft['json'] = { 'jsonlint' }
+      lint.linters_by_ft['ansible'] = { 'ansible-lint' }
+      lint.linters_by_ft['jinja'] = { 'jinja-lsp' }
+      lint.linters_by_ft['django'] = { 'jinja-lsp' }
+      lint.linters_by_ft['systemd'] = { 'systemdlint' }
+      lint.linters_by_ft['yaml'] = { 'yamllint' }
+      lint.linters_by_ft['dockerfile'] = { 'hadolint' }
+      --lint.linters_by_ft['text'] = { 'vale' }
 
       -- To allow other plugins to add linters to require('lint').linters_by_ft,
       -- instead set linters_by_ft like this:

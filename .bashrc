@@ -168,7 +168,7 @@ if [[ -d "/opt/zeek/bin" ]]; then
   export PATH="${PATH}:/opt/zeek/bin"
 fi
 if [[ -d "${HOME}/.local/bin" ]]; then
-  export PATH="$PATH:/home/tkvarfordt/.local/bin"
+  export PATH="${HOME}/.local/bin:$PATH"
 fi
 
 if command -v tmux &> /dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then

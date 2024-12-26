@@ -591,7 +591,6 @@ require('lazy').setup({
         ansiblels = {},
         awk_ls = {},
         bashls = {},
-        bufls = {},
         clangd = {},
         cmake = {},
         docker_compose_language_service = {},

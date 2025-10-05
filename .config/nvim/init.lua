@@ -606,7 +606,6 @@ require('lazy').setup({
         ['zeek-language-server'] = {},
         ansiblels = {},
         autopep8 = {},
-        awk_ls = {},
         bashls = {},
         clangd = {},
         cmake = {},
@@ -972,6 +971,11 @@ require('lazy').setup({
     },
   },
 })
+
+vim.diagnostic.enable = true
+vim.diagnostic.config {
+  virtual_lines = true,
+}
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

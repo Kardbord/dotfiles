@@ -610,6 +610,7 @@ require('lazy').setup({
         clangd = {},
         cmake = {},
         cmakelint = {},
+        copilot = {},
         delve = {},
         docker_compose_language_service = {},
         dockerls = {},
@@ -917,7 +918,7 @@ require('lazy').setup({
       -- Prefer git instead of curl in order to improve connectivity in some environments
       require('nvim-treesitter.install').prefer_git = true
       ---@diagnostic disable-next-line: missing-fields
-      require('nvim-treesitter.configs').setup(opts)
+      require('nvim-treesitter.config').setup(opts)
 
       -- There are additional nvim-treesitter modules that you can use to interact
       -- with nvim-treesitter. You should go explore a few and see what interests you:
@@ -975,6 +976,18 @@ require('lazy').setup({
 vim.diagnostic.enable = true
 vim.diagnostic.config {
   virtual_lines = true,
+}
+
+vim.g.copilot_filetypes = {
+  ['*'] = false,
+  python = true,
+  lua = true,
+  go = true,
+  rust = true,
+  cpp = true,
+  bash = true,
+  javascript = true,
+  typescript = true,
 }
 
 -- The line beneath this is called `modeline`. See `:help modeline`

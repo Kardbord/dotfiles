@@ -106,6 +106,9 @@ vim.g.have_nerd_font = true
 -- NOTE: You can change these options as you wish!
 --  For more options, you can see `:help option-list`
 
+-- views can only be fully collapsed with the global statusline
+vim.opt.laststatus = 3
+
 -- Make line numbers default
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
@@ -610,7 +613,6 @@ require('lazy').setup({
         clangd = {},
         cmake = {},
         cmakelint = {},
-        copilot = {},
         delve = {},
         docker_compose_language_service = {},
         dockerls = {},
@@ -976,18 +978,6 @@ require('lazy').setup({
 vim.diagnostic.enable = true
 vim.diagnostic.config {
   virtual_lines = true,
-}
-
-vim.g.copilot_filetypes = {
-  ['*'] = false,
-  python = true,
-  lua = true,
-  go = true,
-  rust = true,
-  cpp = true,
-  bash = true,
-  javascript = true,
-  typescript = true,
 }
 
 -- The line beneath this is called `modeline`. See `:help modeline`

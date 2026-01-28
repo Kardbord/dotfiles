@@ -1,58 +1,59 @@
 return {
   'farmergreg/vim-lastplace',
-  'github/copilot.vim',
-  'nvim-lua/plenary.nvim',
+  'MunifTanjim/nui.nvim',
+  'nvim-mini/mini.pick',
+  'ibhagwan/fzf-lua',
+  'stevearc/dressing.nvim',
+  'folke/snacks.nvim',
   {
-    'CopilotC-Nvim/CopilotChat.nvim',
-    dependencies = {
-      { 'nvim-lua/plenary.nvim', branch = 'master' },
-    },
-    build = 'make tiktoken',
+    'yetone/avante.nvim',
+    -- ⚠️ must add this setting! ! !
+    build = vim.fn.has 'win32' ~= 0 and 'powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false' or 'make',
+    event = 'VeryLazy',
+    version = false, -- Never set this value to "*"! Never!
+    ---@module 'avante'
+    ---@type avante.Config
     opts = {
-      model = 'gpt-5-mini', -- AI model to use
-      temperature = 0.1, -- Lower = focused, higher = creative
-      window = {
-        layout = 'float', -- 'vertical', 'horizontal', 'float'
-        width = 0.5, -- 50% of screen width
-      },
-      auto_insert_mode = true, -- Enter insert mode when opening
-      functions = {
-        file_glob = {
-          group = 'copilot',
-          description = 'Adds multiple files to the context based on a glob pattern',
-          uri = 'files://glob_contents/{pattern}',
-          schema = {
-            type = 'object',
-            required = { 'pattern' },
-            properties = {
-              pattern = {
-                type = 'string',
-                description = "Glob pattern to match files (e.g. '*.py')",
-                default = '**/*',
-              },
+      -- this file can contain specific instructions for your project
+      instructions_file = 'avante.md',
+      provider = 'claude',
+    },
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'MunifTanjim/nui.nvim',
+      --- The below dependencies are optional,
+      'nvim-mini/mini.pick', -- for file_selector provider mini.pick
+      'nvim-telescope/telescope.nvim', -- for file_selector provider telescope
+      'hrsh7th/nvim-cmp', -- autocompletion for avante commands and mentions
+      'ibhagwan/fzf-lua', -- for file_selector provider fzf
+      'stevearc/dressing.nvim', -- for input provider dressing
+      'folke/snacks.nvim', -- for input provider snacks
+      'nvim-tree/nvim-web-devicons', -- or echasnovski/mini.icons
+      --'zbirenbaum/copilot.lua', -- for providers='copilot'
+      {
+        -- support for image pasting
+        'HakonHarnes/img-clip.nvim',
+        event = 'VeryLazy',
+        opts = {
+          -- recommended settings
+          default = {
+            embed_image_as_base64 = false,
+            prompt_for_file_name = false,
+            drag_and_drop = {
+              insert_mode = true,
             },
+            -- required for Windows users
+            use_absolute_path = true,
           },
-          resolve = function(input, source)
-            local files = require('CopilotChat.utils.files').glob(source.cwd(), {
-              pattern = input.pattern,
-            })
-
-            local resources = {}
-            for _, file_path in ipairs(files) do
-              local data, mimetype = require('CopilotChat.resources').get_file(file_path)
-              if data then
-                table.insert(resources, {
-                  uri = 'file://' .. file_path,
-                  name = file_path,
-                  mimetype = mimetype,
-                  data = data,
-                })
-              end
-            end
-
-            return resources
-          end,
         },
+      },
+      {
+        -- Make sure to set this up properly if you have lazy=true
+        'MeanderingProgrammer/render-markdown.nvim',
+        opts = {
+          file_types = { 'markdown', 'Avante' },
+        },
+        ft = { 'markdown', 'Avante' },
       },
     },
   },

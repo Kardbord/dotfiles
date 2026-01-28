@@ -631,7 +631,6 @@ require('lazy').setup({
         powershell_es = {},
         pylint = {},
         pyright = {},
-        r_language_server = {},
         rust_analyzer = {},
         shellcheck = {},
         shellharden = {},
@@ -902,7 +901,22 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'vim', 'vimdoc' },
+      ensure_installed = {
+        'bash',
+        'c',
+        'cpp',
+        'diff',
+        'go',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'python',
+        'rust',
+        'vim',
+        'vimdoc',
+      },
+
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -921,6 +935,7 @@ require('lazy').setup({
       require('nvim-treesitter.install').prefer_git = true
       ---@diagnostic disable-next-line: missing-fields
       require('nvim-treesitter.config').setup(opts)
+      require('nvim-treesitter').install(opts.ensure_installed)
 
       -- There are additional nvim-treesitter modules that you can use to interact
       -- with nvim-treesitter. You should go explore a few and see what interests you:

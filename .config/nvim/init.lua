@@ -583,6 +583,12 @@ require('lazy').setup({
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
 
+      -- Add folding capabilities for nvim-ufo
+      capabilities.textDocument.foldingRange = {
+        dynamicRegistration = false,
+        lineFoldingOnly = true,
+      }
+
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
       --
@@ -603,45 +609,25 @@ require('lazy').setup({
         -- tsserver = {},
         --
 
-        ['ansible-lint'] = {},
-        ['clang-format'] = {},
-        ['go-debug-adapter'] = {},
-        ['zeek-language-server'] = {},
+        -- Language servers only (linters, formatters, and debug adapters moved to ensure_installed)
         ansiblels = {},
-        autopep8 = {},
         bashls = {},
         clangd = {},
         cmake = {},
-        cmakelint = {},
-        delve = {},
         docker_compose_language_service = {},
         dockerls = {},
         eslint = {},
-        gitlint = {},
         gopls = {},
-        hadolint = {},
         html = {},
         jinja_lsp = {},
         jqls = {},
-        jsonlint = {},
         jsonls = {},
-        luaformatter = {},
         markdown_oxide = {},
-        markdownlint = {},
         powershell_es = {},
-        pylint = {},
         pyright = {},
         rust_analyzer = {},
-        shellcheck = {},
-        shellharden = {},
         sqls = {},
-        stylua = {},
-        systemdlint = {},
-        vale = {},
         vimls = {},
-        xmlformatter = {},
-        yamlfmt = {},
-        yamllint = {},
         yamlls = {},
         lua_ls = {
           -- cmd = {...},
@@ -671,7 +657,28 @@ require('lazy').setup({
       -- for you, so that they are available from within Neovim.
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
+        -- Formatters
         'stylua', -- Used to format Lua code
+        'clang-format',
+        'autopep8',
+        'shellharden',
+        'xmlformatter',
+        'yamlfmt',
+        -- Linters
+        'ansible-lint',
+        'cmakelint',
+        'gitlint',
+        'hadolint',
+        'jsonlint',
+        'markdownlint',
+        'pylint',
+        'shellcheck',
+        'systemdlint',
+        'yamllint',
+        -- Debug adapters
+        'delve',
+        -- Other tools
+        'vale',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -859,6 +866,14 @@ require('lazy').setup({
   -- Highlight todo, notes, etc in comments
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = true } },
 
+  -- Show diagnostics using virtual lines
+  {
+    'https://git.sr.ht/~whynothugo/lsp_lines.nvim',
+    config = function()
+      require('lsp_lines').setup()
+    end,
+  },
+
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
     branch = 'stable',
@@ -990,7 +1005,7 @@ require('lazy').setup({
   },
 })
 
-vim.diagnostic.enable = true
+vim.diagnostic.enable()
 vim.diagnostic.config {
   virtual_lines = true,
 }

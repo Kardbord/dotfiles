@@ -10,8 +10,6 @@ return {
       lint.linters_by_ft['cmake'] = { 'cmakelint' }
       lint.linters_by_ft['json'] = { 'jsonlint' }
       lint.linters_by_ft['ansible'] = { 'ansible-lint' }
-      lint.linters_by_ft['jinja'] = { 'jinja-lsp' }
-      lint.linters_by_ft['django'] = { 'jinja-lsp' }
       lint.linters_by_ft['systemd'] = { 'systemdlint' }
       lint.linters_by_ft['yaml'] = { 'yamllint' }
       lint.linters_by_ft['dockerfile'] = { 'hadolint' }

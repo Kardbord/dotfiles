@@ -450,7 +450,7 @@ require('lazy').setup({
 
       -- `neodev` configures Lua LSP for your Neovim config, runtime and plugins
       -- used for completion, annotations and signatures of Neovim apis
-      { 'folke/neodev.nvim', opts = {} },
+      -- { 'folke/neodev.nvim', opts = {} },
     },
     config = function()
       -- Brief aside: **What is LSP?**
@@ -1007,7 +1007,8 @@ require('lazy').setup({
 
 vim.diagnostic.enable()
 vim.diagnostic.config {
-  virtual_lines = true,
+  virtual_lines = false,
+  virtual_text = true,
 }
 
 -- The line beneath this is called `modeline`. See `:help modeline`

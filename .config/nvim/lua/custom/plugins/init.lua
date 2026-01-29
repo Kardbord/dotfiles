@@ -1,4 +1,15 @@
 return {
+  {
+    'folke/lazydev.nvim',
+    ft = 'lua', -- only load on lua files
+    opts = {
+      library = {
+        -- See the configuration section for more details
+        -- Load luvit types when the `vim.uv` word is found
+        { path = '${3rd}/luv/library', words = { 'vim%.uv' } },
+      },
+    },
+  },
   'farmergreg/vim-lastplace',
   'MunifTanjim/nui.nvim',
   'nvim-mini/mini.pick',
@@ -16,14 +27,26 @@ return {
     'yetone/avante.nvim',
     -- ⚠️ must add this setting! ! !
     build = vim.fn.has 'win32' ~= 0 and 'powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false' or 'make',
-    event = 'VeryLazy',
+    event = 'VimEnter',
     version = false, -- Never set this value to "*"! Never!
     ---@module 'avante'
     ---@type avante.Config
     opts = {
       -- this file can contain specific instructions for your project
       instructions_file = 'avante.md',
-      provider = 'claude',
+      provider = 'openai',
+      providers = {
+        claude = {
+          endpoint = 'https://api.anthropic.com',
+          model = 'claude-sonnet-4-5',
+          timeout = 30000, -- Timeout in milliseconds
+        },
+        openai = {
+          endpoint = 'https://api.openai.com/v1',
+          model = 'gpt-5',
+          timeout = 30000, -- Timeout in milliseconds
+        },
+      },
     },
     dependencies = {
       'nvim-lua/plenary.nvim',
@@ -61,6 +84,43 @@ return {
           file_types = { 'markdown', 'Avante' },
         },
         ft = { 'markdown', 'Avante' },
+      },
+    },
+  },
+  {
+    'folke/trouble.nvim',
+    opts = {}, -- for default options, refer to the configuration section for custom setup.
+    cmd = 'Trouble',
+    keys = {
+      {
+        '<leader>xx',
+        '<cmd>Trouble diagnostics toggle<cr>',
+        desc = 'Diagnostics (Trouble)',
+      },
+      {
+        '<leader>xX',
+        '<cmd>Trouble diagnostics toggle filter.buf=0<cr>',
+        desc = 'Buffer Diagnostics (Trouble)',
+      },
+      {
+        '<leader>cs',
+        '<cmd>Trouble symbols toggle focus=false<cr>',
+        desc = 'Symbols (Trouble)',
+      },
+      {
+        '<leader>cl',
+        '<cmd>Trouble lsp toggle focus=false win.position=right<cr>',
+        desc = 'LSP Definitions / references / ... (Trouble)',
+      },
+      {
+        '<leader>xL',
+        '<cmd>Trouble loclist toggle<cr>',
+        desc = 'Location List (Trouble)',
+      },
+      {
+        '<leader>xQ',
+        '<cmd>Trouble qflist toggle<cr>',
+        desc = 'Quickfix List (Trouble)',
       },
     },
   },

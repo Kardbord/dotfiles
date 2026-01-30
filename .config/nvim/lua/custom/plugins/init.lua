@@ -34,7 +34,7 @@ return {
     opts = {
       -- this file can contain specific instructions for your project
       instructions_file = 'avante.md',
-      provider = 'openai',
+      provider = 'codex',
       providers = {
         claude = {
           endpoint = 'https://api.anthropic.com',
@@ -45,6 +45,18 @@ return {
           endpoint = 'https://api.openai.com/v1',
           model = 'gpt-5',
           timeout = 30000, -- Timeout in milliseconds
+        },
+      },
+      acp_providers = {
+        ['codex'] = {
+          command = 'npx',
+          args = { '-y', '-g', '@zed-industries/codex-acp' },
+          env = {
+            NODE_NO_WARNINGS = '1',
+            HOME = os.getenv 'HOME',
+            PATH = os.getenv 'PATH',
+            OPENAI_API_KEY = os.getenv 'OPENAI_API_KEY',
+          },
         },
       },
     },

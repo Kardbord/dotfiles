@@ -35,6 +35,10 @@ return {
       -- this file can contain specific instructions for your project
       instructions_file = 'avante.md',
       provider = 'codex',
+      web_search_engine = {
+        provider = 'tavily', -- tavily, serpapi, google, kagi, brave, or searxng
+        proxy = nil,
+      },
       providers = {
         claude = {
           endpoint = 'https://api.anthropic.com',

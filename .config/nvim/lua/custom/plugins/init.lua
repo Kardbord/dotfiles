@@ -54,7 +54,7 @@ return {
       acp_providers = {
         ['codex'] = {
           command = 'npx',
-          args = { '-y', '-g', '@zed-industries/codex-acp' },
+          args = { '-y', '@zed-industries/codex-acp' },
           env = {
             NODE_NO_WARNINGS = '1',
             HOME = os.getenv 'HOME',

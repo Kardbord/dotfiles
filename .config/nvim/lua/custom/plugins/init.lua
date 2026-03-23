@@ -34,7 +34,7 @@ return {
     opts = {
       -- this file can contain specific instructions for your project
       instructions_file = 'avante.md',
-      provider = 'claude',
+      provider = 'claude-haiku',
       web_search_engine = {
         provider = 'tavily', -- tavily, serpapi, google, kagi, brave, or searxng
         proxy = nil,
@@ -42,13 +42,43 @@ return {
       providers = {
         claude = {
           endpoint = 'https://api.anthropic.com',
-          model = 'claude-sonnet-4-5',
+          model = 'claude-sonnet-4-6',
           timeout = 30000, -- Timeout in milliseconds
+        },
+        ['claude-haiku'] = {
+          __inherited_from = 'claude',
+          model = 'claude-haiku-4-5',
+          timeout = 30000, -- Timeout in milliseconds
+          extra_request_body = {
+            temperature = 0.75,
+            max_tokens = 8192,
+          },
+        },
+        ['claude-opus'] = {
+          __inherited_from = 'claude',
+          model = 'claude-opus-4-6',
+          timeout = 30000, -- Timeout in milliseconds
+          extra_request_body = {
+            temperature = 0.75,
+            max_tokens = 20480,
+          },
         },
         openai = {
           endpoint = 'https://api.openai.com/v1',
           model = 'gpt-5',
           timeout = 30000, -- Timeout in milliseconds
+        },
+        gemini = {
+          endpoint = 'https://generativelanguage.googleapis.com/v1beta/models',
+          model = 'gemini-2.5-flash',
+          timeout = 30000, -- Timeout in milliseconds
+          context_window = 1048576,
+          use_ReAct_prompt = true,
+          extra_request_body = {
+            generationConfig = {
+              temperature = 0.75,
+            },
+          },
         },
       },
     },

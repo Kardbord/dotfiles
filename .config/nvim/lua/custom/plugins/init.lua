@@ -34,51 +34,101 @@ return {
     opts = {
       -- this file can contain specific instructions for your project
       instructions_file = 'avante.md',
-      provider = 'claude-haiku',
+      provider = 'openrouter_free',
       web_search_engine = {
         provider = 'tavily', -- tavily, serpapi, google, kagi, brave, or searxng
         proxy = nil,
       },
       providers = {
-        claude = {
-          endpoint = 'https://api.anthropic.com',
-          model = 'claude-sonnet-4-6',
-          timeout = 30000, -- Timeout in milliseconds
+        openrouter_free = {
+          __inherited_from = 'openai',
+          api_key_name = 'OPENROUTER_API_KEY',
+          endpoint = 'https://openrouter.ai/api/v1',
+          model = 'openrouter/free',
         },
-        ['claude-haiku'] = {
-          __inherited_from = 'claude',
-          model = 'claude-haiku-4-5',
-          timeout = 30000, -- Timeout in milliseconds
-          extra_request_body = {
-            temperature = 0.75,
-            max_tokens = 8192,
-          },
+        openrouter_auto = {
+          __inherited_from = 'openai',
+          api_key_name = 'OPENROUTER_API_KEY',
+          endpoint = 'https://openrouter.ai/api/v1',
+          model = 'openrouter/auto',
         },
-        ['claude-opus'] = {
-          __inherited_from = 'claude',
-          model = 'claude-opus-4-6',
-          timeout = 30000, -- Timeout in milliseconds
-          extra_request_body = {
-            temperature = 0.75,
-            max_tokens = 20480,
-          },
+        openrouter_haiku = {
+          __inherited_from = 'openai',
+          api_key_name = 'OPENROUTER_API_KEY',
+          endpoint = 'https://openrouter.ai/api/v1',
+          model = 'anthropic/claude-haiku-4.5',
         },
-        openai = {
-          endpoint = 'https://api.openai.com/v1',
-          model = 'gpt-5',
-          timeout = 30000, -- Timeout in milliseconds
+        openrouter_sonnet = {
+          __inherited_from = 'openai',
+          api_key_name = 'OPENROUTER_API_KEY',
+          endpoint = 'https://openrouter.ai/api/v1',
+          model = 'anthropic/claude-sonnet-4.6',
         },
-        gemini = {
-          endpoint = 'https://generativelanguage.googleapis.com/v1beta/models',
-          model = 'gemini-2.5-flash',
-          timeout = 30000, -- Timeout in milliseconds
-          context_window = 1048576,
-          use_ReAct_prompt = true,
-          extra_request_body = {
-            generationConfig = {
-              temperature = 0.75,
-            },
-          },
+        openrouter_opus = {
+          __inherited_from = 'openai',
+          api_key_name = 'OPENROUTER_API_KEY',
+          endpoint = 'https://openrouter.ai/api/v1',
+          model = 'anthropic/claude-opus-4.7',
+        },
+        openrouter_deepseek = {
+          __inherited_from = 'openai',
+          api_key_name = 'OPENROUTER_API_KEY',
+          endpoint = 'https://openrouter.ai/api/v1',
+          model = 'deepseek/deepseek-v3.2',
+        },
+        openrouter_qwen = {
+          __inherited_from = 'openai',
+          api_key_name = 'OPENROUTER_API_KEY',
+          endpoint = 'https://openrouter.ai/api/v1',
+          model = 'qwen/qwen3-coder-next',
+        },
+        openrouter_llama = {
+          __inherited_from = 'openai',
+          api_key_name = 'OPENROUTER_API_KEY',
+          endpoint = 'https://openrouter.ai/api/v1',
+          model = 'nvidia/llama-3.3-nemotron-super-49b-v1.5',
+        },
+        openrouter_mistral = {
+          __inherited_from = 'openai',
+          api_key_name = 'OPENROUTER_API_KEY',
+          endpoint = 'https://openrouter.ai/api/v1',
+          model = 'mistralai/codestral-2508',
+        },
+        openrouter_gemini = {
+          __inherited_from = 'openai',
+          api_key_name = 'OPENROUTER_API_KEY',
+          endpoint = 'https://openrouter.ai/api/v1',
+          model = 'google/gemini-2.5-flash',
+        },
+        openrouter_gemma = {
+          __inherited_from = 'openai',
+          api_key_name = 'OPENROUTER_API_KEY',
+          endpoint = 'https://openrouter.ai/api/v1',
+          model = 'google/gemma-4-31b-it',
+        },
+        openrouter_kimi = {
+          __inherited_from = 'openai',
+          api_key_name = 'OPENROUTER_API_KEY',
+          endpoint = 'https://openrouter.ai/api/v1',
+          model = 'moonshotai/kimi-k2.6',
+        },
+        openrouter_glm = {
+          __inherited_from = 'openai',
+          api_key_name = 'OPENROUTER_API_KEY',
+          endpoint = 'https://openrouter.ai/api/v1',
+          model = 'z-ai/glm-5.1',
+        },
+        openrouter_mimo = {
+          __inherited_from = 'openai',
+          api_key_name = 'OPENROUTER_API_KEY',
+          endpoint = 'https://openrouter.ai/api/v1',
+          model = 'xiaomi/mimo-v2-pro',
+        },
+        openrouter_minimax = {
+          __inherited_from = 'openai',
+          api_key_name = 'OPENROUTER_API_KEY',
+          endpoint = 'https://openrouter.ai/api/v1',
+          model = 'minimax/minimax-m2.5',
         },
       },
     },

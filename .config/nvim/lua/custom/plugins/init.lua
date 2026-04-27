@@ -33,7 +33,7 @@ return {
     ---@type avante.Config
     opts = {
       -- this file can contain specific instructions for your project
-      instructions_file = 'avante.md',
+      instructions_file = 'AGENTS.md',
       provider = 'openrouter_free',
       web_search_engine = {
         provider = 'tavily', -- tavily, serpapi, google, kagi, brave, or searxng

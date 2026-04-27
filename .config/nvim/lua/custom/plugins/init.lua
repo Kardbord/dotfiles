@@ -70,11 +70,17 @@ return {
           endpoint = 'https://openrouter.ai/api/v1',
           model = 'anthropic/claude-opus-4.7:floor',
         },
-        openrouter_deepseek = {
+        openrouter_deepseek_4_pro = {
           __inherited_from = 'openai',
           api_key_name = 'OPENROUTER_API_KEY',
           endpoint = 'https://openrouter.ai/api/v1',
-          model = 'deepseek/deepseek-v3.2:floor',
+          model = 'deepseek/deepseek-v4-pro',
+        },
+        openrouter_deepseek_4_flash = {
+          __inherited_from = 'openai',
+          api_key_name = 'OPENROUTER_API_KEY',
+          endpoint = 'https://openrouter.ai/api/v1',
+          model = 'deepseek/deepseek-v4-pro',
         },
         openrouter_qwen = {
           __inherited_from = 'openai',

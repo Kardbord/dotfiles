@@ -74,13 +74,13 @@ return {
           __inherited_from = 'openai',
           api_key_name = 'OPENROUTER_API_KEY',
           endpoint = 'https://openrouter.ai/api/v1',
-          model = 'deepseek/deepseek-v4-pro',
+          model = 'deepseek/deepseek-v4-pro:floor',
         },
         openrouter_deepseek_4_flash = {
           __inherited_from = 'openai',
           api_key_name = 'OPENROUTER_API_KEY',
           endpoint = 'https://openrouter.ai/api/v1',
-          model = 'deepseek/deepseek-v4-pro',
+          model = 'deepseek/deepseek-v4-flash:floor',
         },
         openrouter_qwen = {
           __inherited_from = 'openai',

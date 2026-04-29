@@ -236,43 +236,58 @@ local function has_flag(args, flag)
 end
 
 --- Check if a git command contains dangerous flags.
----@param _subcommand string Unused; reserved for future per-subcommand checks
+---@param subcommand string The git subcommand (e.g., "branch", "tag", "switch")
 ---@param args string
 ---@return boolean, string|nil Returns true if dangerous, and description of the danger
-local function check_dangerous_flags(_subcommand, args)
+local function check_dangerous_flags(subcommand, args)
   -- Force flags (-f, --force, --force-with-lease)
   if has_flag(args, '-f') or has_flag(args, '--force') or has_flag(args, '--force-with-lease') then
     return true, 'Force flags (-f, --force, --force-with-lease) are not allowed'
   end
 
+  -- Force delete for branch -D (force-delete branch, equivalent to --delete --force)
+  if subcommand == 'branch' and has_flag(args, '-D') then
+    return true, '-D flag for branch is not allowed (force-deletes a branch)'
+  end
+
+  -- Force delete for tag -d (delete tag) and -D (force-delete tag)
+  if subcommand == 'tag' and (has_flag(args, '-d') or has_flag(args, '-D')) then
+    return true, 'tag delete flags (-d, -D) are not allowed'
+  end
+
   -- --no-verify (skips hooks)
-  if args:match '%-%-no%-verify' then
+  if has_flag(args, '--no-verify') then
     return true, '--no-verify flag is not allowed'
   end
 
   -- --hard (destructive: destroys uncommitted changes)
-  if args:match '%-%-hard' then
+  if has_flag(args, '--hard') then
     return true, '--hard flag is not allowed (would destroy uncommitted changes)'
   end
 
   -- Interactive mode: -i (short) or --interactive (long)
-  if has_flag(args, '-i') or args:match '%-%-interactive' then
+  if has_flag(args, '-i') or has_flag(args, '--interactive') then
     return true, 'Interactive mode (-i, --interactive) is not allowed'
   end
 
   -- --exec in rebase (executes arbitrary shell commands per commit)
-  if args:match '%-%-exec' then
+  if has_flag(args, '--exec') then
     return true, '--exec flag in rebase is not allowed'
   end
 
   -- --onto in rebase (complex history rewriting)
-  if args:match '%-%-onto' then
+  if has_flag(args, '--onto') then
     return true, '--onto in rebase requires explicit approval'
   end
 
   -- --autosquash (rewrites history)
-  if args:match '%-%-autosquash' then
+  if has_flag(args, '--autosquash') then
     return true, '--autosquash is not allowed'
+  end
+
+  -- --discard-changes / --discard for switch (discards working tree changes)
+  if subcommand == 'switch' and (has_flag(args, '--discard-changes') or has_flag(args, '--discard')) then
+    return true, '--discard-changes / --discard for switch is not allowed (would discard working tree changes)'
   end
 
   return false, nil

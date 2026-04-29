@@ -33,11 +33,26 @@ local custom_banned_commands = {
   'svn', -- No version control from bash
   'hg', -- No Mercurial from bash
   'cvs', -- No CVS from bash
+  'sudo', -- No privilege escalation in bash
+  'env', -- No env-based command invocation (used to bypass bans)
+  'command', -- No bash 'command' builtin (used to bypass bans)
+  'exec', -- No exec-based command invocation (used to bypass bans)
+  'eval', -- No eval (used to bypass bans via arbitrary string evaluation)
+  'bash', -- No nested bash invocations (used to bypass bans)
+  'sh', -- No sh (used to bypass bans)
+  -- TODO: figure out a way to ban running interpreted shells in ways that could bypass bans
+  -- TODO: figure out a way to ban compilation and execution of code that could bypass bans
 }
 
 -- Combine all banned commands
 local all_banned_commands = vim.deepcopy(banned_commands)
 vim.list_extend(all_banned_commands, custom_banned_commands)
+
+-- Build a set of banned commands for fast lookup
+local banned_set = {}
+for _, cmd in ipairs(all_banned_commands) do
+  banned_set[cmd] = true
+end
 
 -- Lazy-loaded avante module references (populated when tools are first used)
 local Path, Utils, Helpers, Base, Config, Providers
@@ -252,23 +267,59 @@ local function tokenize(command)
   return tokens
 end
 
+--- Extract the command name from a token, stripping leading path, backslash escapes, etc.
+--- Returns the bare command name (e.g., "/usr/bin/git" -> "git", "\git" -> "git").
+---@param token string
+---@return string
+local function extract_command_name(token)
+  -- Strip leading backslash escape
+  local name = token:gsub('^\\+', '')
+  -- Strip directory path (take basename)
+  name = vim.fn.fnamemodify(name, ':t')
+  return name
+end
+
+--- Check if a token is an environment variable assignment (KEY=value).
+---@param token string
+---@return boolean
+local function is_env_assignment(token)
+  return token:match '^[a-zA-Z_][a-zA-Z0-9_]*=' ~= nil
+end
+
+--- Check if a command contains command substitution ($(...) or backticks).
+--- TODO: Allow non-banned commands in command substitutions
+---@param command string
+---@return boolean, string|nil Returns true if found, and a description
+local function check_command_substitution(command)
+  -- Check for $() substitution
+  if command:match '%$%(' then
+    return true, 'Command substitution ($(...)) is not allowed'
+  end
+  -- Check for backtick substitution (must have at least one backtick)
+  if command:match '`' then
+    return true, 'Command substitution (backticks) is not allowed'
+  end
+  return false, nil
+end
+
 --- Check if a command contains any banned command.
 --- Checks the first word of each sub-command (after &&, ||, ;, |, etc.).
+--- Also catches absolute paths (/usr/bin/git), env-var prefixes (KEY=val git), and command substitution.
 ---@param command string
----@return boolean, string|nil Returns true if banned, and the banned command if found
+---@return boolean, string|nil Returns true if banned, and a description of why
 local function check_banned_command(command)
   if not command or command == '' then
     return false, nil
   end
 
+  -- Check for command substitution first (these can run arbitrary commands)
+  local has_subst, subst_desc = check_command_substitution(command)
+  if has_subst then
+    return true, subst_desc
+  end
+
   -- Tokenize the full command
   local tokens = tokenize(command)
-
-  -- Build a set of banned commands for fast lookup
-  local banned_set = {}
-  for _, cmd in ipairs(all_banned_commands) do
-    banned_set[cmd] = true
-  end
 
   -- Separator tokens that start a new sub-command
   local separators = {
@@ -279,22 +330,16 @@ local function check_banned_command(command)
     ['&'] = true,
   }
 
-  -- Check the first token
-  if #tokens > 0 and banned_set[tokens[1]] then
-    return true, tokens[1]
-  end
-
-  -- Walk through tokens looking for separators; the next non-separator token is a command
-  for idx = 2, #tokens do
-    if separators[tokens[idx]] then
-      -- Look ahead for the next non-separator, non-whitespace token
-      for j = idx + 1, #tokens do
-        if not separators[tokens[j]] then
-          if banned_set[tokens[j]] then
-            return true, tokens[j]
-          end
-          break
-        end
+  -- Check each token's basename against the banned set.
+  -- This catches bare commands (git), absolute paths (/usr/bin/git),
+  -- and backslash-escaped commands (\git).
+  -- We skip environment variable assignments (KEY=val) and separators
+  -- when determining the "command" token to check.
+  for idx = 1, #tokens do
+    if not separators[tokens[idx]] and not is_env_assignment(tokens[idx]) then
+      local cmd_name = extract_command_name(tokens[idx])
+      if banned_set[cmd_name] then
+        return true, tokens[idx]
       end
     end
   end
@@ -302,7 +347,7 @@ local function check_banned_command(command)
   return false, nil
 end
 
----@type AvanteLLMToolFunc<{ path: string, command: string }>
+---@type AvanteLLMToolFunc<{ path: string, command: string, timeout: uinteger }>
 function BashCmd.func(input, opts)
   ensure_modules()
   local is_streaming = opts.streaming or false
@@ -311,9 +356,9 @@ function BashCmd.func(input, opts)
     return
   end
 
-  local is_banned, cmd = check_banned_command(input.command)
+  local is_banned, reason = check_banned_command(input.command)
   if is_banned then
-    return false, 'Command is banned: ' .. cmd
+    return false, 'Command is banned: ' .. reason
   end
 
   local abs_path = Helpers.get_abs_path(input.path)
@@ -354,10 +399,12 @@ function BashCmd.func(input, opts)
         opts.on_complete(false, 'User declined, reason: ' .. (reason and reason or 'unknown'))
         return
       end
+      -- Use the user-provided timeout if specified, clamped to max 600000ms (10 minutes)
+      local timeout_ms = math.min(input.timeout or 600000, 600000)
       Utils.shell_run_async(input.command, 'bash -c', function(output, exit_code)
         local result, err = handle_result(output, exit_code)
         opts.on_complete(result, err)
-      end, abs_path, 1000 * 60 * 2)
+      end, abs_path, timeout_ms)
     end,
     { focus = true },
     opts.session_ctx,

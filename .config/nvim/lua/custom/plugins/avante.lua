@@ -1,29 +1,5 @@
 return {
   {
-    'folke/lazydev.nvim',
-    ft = 'lua', -- only load on lua files
-    opts = {
-      library = {
-        -- See the configuration section for more details
-        -- Load luvit types when the `vim.uv` word is found
-        { path = '${3rd}/luv/library', words = { 'vim%.uv' } },
-      },
-    },
-  },
-  'farmergreg/vim-lastplace',
-  'MunifTanjim/nui.nvim',
-  'nvim-mini/mini.pick',
-  'ibhagwan/fzf-lua',
-  'stevearc/dressing.nvim',
-  'folke/snacks.nvim',
-  {
-    'MeanderingProgrammer/render-markdown.nvim',
-    dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-mini/mini.nvim' },
-    ---@module 'render-markdown'
-    ---@type render.md.UserConfig
-    opts = {},
-  },
-  {
     'yetone/avante.nvim',
     -- ⚠️ must add this setting! ! !
     build = vim.fn.has 'win32' ~= 0 and 'powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false' or 'make',
@@ -34,6 +10,18 @@ return {
     opts = {
       -- this file can contain specific instructions for your project
       instructions_file = 'AGENTS.md',
+      disabled_tools = {
+        'bash', -- Disable the built-in bash tool (replaced by our custom bash_cmd tool)
+        'git_commit', -- Disable the built-in git commit tool (replaced by our custom git tool)
+      },
+      -- Use our custom tools
+      -- NOTE: Wrapped in a function to defer loading until avante modules are available
+      custom_tools = function()
+        return {
+          require 'custom.avante-tools.bash-tool',
+          require 'custom.avante-tools.git-tool',
+        }
+      end,
       provider = 'openrouter_free',
       web_search_engine = {
         provider = 'tavily', -- tavily, serpapi, google, kagi, brave, or searxng
@@ -174,43 +162,6 @@ return {
           file_types = { 'markdown', 'Avante' },
         },
         ft = { 'markdown', 'Avante' },
-      },
-    },
-  },
-  {
-    'folke/trouble.nvim',
-    opts = {}, -- for default options, refer to the configuration section for custom setup.
-    cmd = 'Trouble',
-    keys = {
-      {
-        '<leader>xx',
-        '<cmd>Trouble diagnostics toggle<cr>',
-        desc = 'Diagnostics (Trouble)',
-      },
-      {
-        '<leader>xX',
-        '<cmd>Trouble diagnostics toggle filter.buf=0<cr>',
-        desc = 'Buffer Diagnostics (Trouble)',
-      },
-      {
-        '<leader>cs',
-        '<cmd>Trouble symbols toggle focus=false<cr>',
-        desc = 'Symbols (Trouble)',
-      },
-      {
-        '<leader>cl',
-        '<cmd>Trouble lsp toggle focus=false win.position=right<cr>',
-        desc = 'LSP Definitions / references / ... (Trouble)',
-      },
-      {
-        '<leader>xL',
-        '<cmd>Trouble loclist toggle<cr>',
-        desc = 'Location List (Trouble)',
-      },
-      {
-        '<leader>xQ',
-        '<cmd>Trouble qflist toggle<cr>',
-        desc = 'Quickfix List (Trouble)',
       },
     },
   },

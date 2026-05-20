@@ -628,7 +628,57 @@ require('lazy').setup({
         rust_analyzer = {},
         sqls = {},
         vimls = {},
-        yamlls = {},
+        yamlls = {
+          settings = {
+            yaml = {
+              -- Schema configuration
+              schemas = {
+                ['https://json.schemastore.org/github-workflow.json'] = {
+                  '.github/workflows/*.yml',
+                  '.github/workflows/*.yaml',
+                },
+                ['https://json.schemastore.org/docker-compose.json'] = {
+                  'docker-compose*.yml',
+                  'docker-compose*.yaml',
+                  'compose*.yml',
+                  'compose*.yaml',
+                },
+                ['https://json.schemastore.org/kubernetes-1.24.json'] = {
+                  '*.k8s.yaml',
+                  '*.k8s.yml',
+                  '**/k8s/**/*.yaml',
+                  '**/k8s/**/*.yml',
+                },
+                ['https://json.schemastore.org/ansible-playbook.json'] = {
+                  '*playbook*.yml',
+                  '*playbook*.yaml',
+                  '**/ansible/**/*.yml',
+                  '**/ansible/**/*.yaml',
+                },
+                ['https://json.schemastore.org/gitlab-ci.json'] = {
+                  '.gitlab-ci.yml',
+                  '**/.gitlab-ci.yml',
+                },
+              },
+
+              -- Enable schema store for additional schemas
+              schemaStore = {
+                enable = true,
+              },
+
+              -- Validation settings (keep true for syntax/schema errors)
+              validate = true,
+              completion = true,
+              hover = true,
+
+              -- Formatting (disable if you want to control formatting separately)
+              format = {
+                enable = false,
+                singleQuote = true,
+              },
+            },
+          },
+        },
         lua_ls = {
           -- cmd = {...},
           -- filetypes = { ...},
@@ -674,7 +724,6 @@ require('lazy').setup({
         'pylint',
         'shellcheck',
         'systemdlint',
-        'yamllint',
         -- Debug adapters
         'delve',
         -- Other tools

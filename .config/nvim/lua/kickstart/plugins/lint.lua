@@ -11,7 +11,7 @@ return {
       lint.linters_by_ft['json'] = { 'jsonlint' }
       lint.linters_by_ft['ansible'] = { 'ansible-lint' }
       lint.linters_by_ft['systemd'] = { 'systemdlint' }
-      lint.linters_by_ft['yaml'] = { 'yamllint' }
+      --lint.linters_by_ft['yaml'] = { 'yamllint' }
       lint.linters_by_ft['dockerfile'] = { 'hadolint' }
       --lint.linters_by_ft['text'] = { 'vale' }
 

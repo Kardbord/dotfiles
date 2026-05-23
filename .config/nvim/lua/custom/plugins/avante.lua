@@ -10,11 +10,18 @@ return {
     opts = {
       -- this file can contain specific instructions for your project
       instructions_file = 'AGENTS.md',
+      -- Disabled tools for standard providers
       disabled_tools = {
         'bash', -- Disable the built-in bash tool (replaced by our custom bash_cmd tool)
         'git_commit', -- Disable the built-in git commit tool (replaced by our custom git tool)
       },
-      -- Use our custom tools
+      mode = 'agentic',
+      behaviour = {
+        enable_fastapply = false,
+        auto_approve_tool_permissions = false,
+        confirmation_ui_style = 'inline_buttons', -- 'inline_buttons' or 'popup'
+      },
+      -- Use our custom tools for standard providers
       -- NOTE: Wrapped in a function to defer loading until avante modules are available
       custom_tools = function()
         return {
@@ -52,12 +59,6 @@ return {
           endpoint = 'https://openrouter.ai/api/v1',
           model = 'anthropic/claude-sonnet-4.6:floor',
         },
-        openrouter_opus = {
-          __inherited_from = 'openai',
-          api_key_name = 'OPENROUTER_API_KEY',
-          endpoint = 'https://openrouter.ai/api/v1',
-          model = 'anthropic/claude-opus-4.7:floor',
-        },
         openrouter_deepseek_4_pro = {
           __inherited_from = 'openai',
           api_key_name = 'OPENROUTER_API_KEY',
@@ -70,11 +71,17 @@ return {
           endpoint = 'https://openrouter.ai/api/v1',
           model = 'deepseek/deepseek-v4-flash:floor',
         },
+        openrouter_deepseek_4_flash_free = {
+          __inherited_from = 'openai',
+          api_key_name = 'OPENROUTER_API_KEY',
+          endpoint = 'https://openrouter.ai/api/v1',
+          model = 'deepseek/deepseek-v4-flash:free',
+        },
         openrouter_qwen = {
           __inherited_from = 'openai',
           api_key_name = 'OPENROUTER_API_KEY',
           endpoint = 'https://openrouter.ai/api/v1',
-          model = 'qwen/qwen3-coder-next:floor',
+          model = 'qwen/qwen3.6-flash:floor',
         },
         openrouter_llama = {
           __inherited_from = 'openai',
@@ -86,19 +93,19 @@ return {
           __inherited_from = 'openai',
           api_key_name = 'OPENROUTER_API_KEY',
           endpoint = 'https://openrouter.ai/api/v1',
-          model = 'mistralai/codestral-2508:floor',
+          model = 'mistralai/codestral-embed-2505:floor',
         },
         openrouter_gemini = {
           __inherited_from = 'openai',
           api_key_name = 'OPENROUTER_API_KEY',
           endpoint = 'https://openrouter.ai/api/v1',
-          model = 'google/gemini-2.5-flash:floor',
+          model = '~google/gemini-flash-latest:floor',
         },
         openrouter_gemma = {
           __inherited_from = 'openai',
           api_key_name = 'OPENROUTER_API_KEY',
           endpoint = 'https://openrouter.ai/api/v1',
-          model = 'google/gemma-4-31b-it:floor',
+          model = 'google/gemma-4-31b-it:free',
         },
         openrouter_kimi = {
           __inherited_from = 'openai',
@@ -123,6 +130,520 @@ return {
           api_key_name = 'OPENROUTER_API_KEY',
           endpoint = 'https://openrouter.ai/api/v1',
           model = 'minimax/minimax-m2.7:floor',
+        },
+      },
+      acp_providers = {
+        opencode_plan_free = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "plan",
+              "model": "openrouter/free",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_build_free = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "build",
+              "model": "openrouter/free",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_plan_auto = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "plan",
+              "model": "openrouter/auto",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_build_auto = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "build",
+              "model": "openrouter/auto",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_plan_deepseek_flash = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "plan",
+              "model": "deepseek/deepseek-v4-flash:free",
+              "small_model": "deepseek/deepseek-v4-flash:free",
+            }
+            ]],
+          },
+        },
+        opencode_build_deepseek_flash = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "build",
+              "model": "deepseek/deepseek-v4-flash:free",
+              "small_model": "deepseek/deepseek-v4-flash:free",
+            }
+            ]],
+          },
+        },
+        opencode_plan_anthropic = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "plan",
+              "model": "anthropic/claude-sonnet-4.6:floor",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_build_anthropic = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "build",
+              "model": "anthropic/claude-haiku-4.5:floor",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_plan_kimi = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "plan",
+              "model": "moonshotai/kimi-k2.6:floor",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_build_kimi = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "build",
+              "model": "moonshotai/kimi-k2.6:floor",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_plan_qwen = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "plan",
+              "model": "qwen/qwen3.6-plus:floor",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_build_qwen = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "build",
+              "model": "qwen/qwen3.6-flash:floor",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_plan_mistral = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "plan",
+              "model": "mistralai/devstral-2512:floor",
+              "small_model": "mistralai/mistral-small-2603:floor",
+            }
+            ]],
+          },
+        },
+        opencode_build_mistral = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "build",
+              "model": "mistralai/devstral-2512:floor",
+              "small_model": "mistralai/mistral-small-2603:floor",
+            }
+            ]],
+          },
+        },
+        opencode_plan_gemini = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "plan",
+              "model": "google/gemini-3.5-flash:floor",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_build_gemini = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "build",
+              "model": "google/gemini-3.5-flash:floor",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_plan_gemma = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "plan",
+              "model": "google/gemma-4-31b-it:free",
+              "small_model": "google/gemma-4-31b-it:free",
+            }
+            ]],
+          },
+        },
+        opencode_build_gemma = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "build",
+              "model": "google/gemma-4-31b-it:free",
+              "small_model": "google/gemma-4-31b-it:free",
+            }
+            ]],
+          },
+        },
+        opencode_plan_glm = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "plan",
+              "model": "z-ai/glm-5.1:floor",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_build_glm = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "build",
+              "model": "z-ai/glm-5.1:floor",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_plan_mimo = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "plan",
+              "model": "xiaomi/mimo-v2.5:floor",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_build_mimo = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "build",
+              "model": "xiaomi/mimo-v2.5:floor",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_plan_minimax = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "plan",
+              "model": "minimax/minimax-m2.7:floor",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_build_minimax = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "build",
+              "model": "minimax/minimax-m2.7:floor",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_plan_granite = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "plan",
+              "model": "ibm-granite/granite-4.1-8b:floor",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_build_granite = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "build",
+              "model": "ibm-granite/granite-4.1-8b:floor",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_plan_kat = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "plan",
+              "model": "kwaipilot/kat-coder-pro-v2:floor",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_build_kat = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "build",
+              "model": "kwaipilot/kat-coder-pro-v2:floor",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_plan_ring = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "plan",
+              "model": "inclusionai/ring-2.6-1t:floor",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_build_ring = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "build",
+              "model": "inclusionai/ring-2.6-1t:floor",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_plan_mercury = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "plan",
+              "model": "inception/mercury-2:floor",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
+        },
+        opencode_build_mercury = {
+          command = 'npx',
+          args = { '--yes', 'opencode-ai', 'acp' },
+          env = {
+            OPENROUTER_API_KEY = os.getenv 'OPENROUTER_API_KEY',
+            OPENCODE_CONFIG_DIR = './custom/opencode-config',
+            OPENCODE_ENABLE_EXA = true,
+            OPENCODE_CONFIG_CONTENT = [[
+            {
+              "default_agent": "build",
+              "model": "inception/mercury-2:floor",
+              "small_model": "openrouter/free",
+            }
+            ]],
+          },
         },
       },
     },

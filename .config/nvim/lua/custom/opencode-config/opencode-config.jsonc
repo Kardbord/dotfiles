@@ -1,0 +1,84 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "enabled_providers": [
+    "openrouter"
+  ],
+  "provider": {
+    "openrouter": {
+      "options": {
+        "apiKey": "{env:OPENROUTER_API_KEY}"
+      }
+    }
+  },
+  "logLevel": "WARN",
+  "autoupdate": true,
+  "snapshot": true,
+  "formatter": true,
+  "lsp": true,
+  "share": "disabled",
+  "compaction": {
+    "auto": true,
+    "prune": true,
+    "reserved": 10000
+  },
+  "permission": {
+    "*": "ask",
+    "read": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env*": "deny",
+      "*.env.example": "allow"
+    },
+    "edit": "allow",
+    "glob": "allow",
+    "grep": "allow",
+    "list": "allow",
+    "task": "allow",
+    "external_directory": "ask",
+    "todowrite": "allow",
+    "question": "allow",
+    "webfetch": "allow",
+    "websearch": "allow",
+    "repo_clone": "ask",
+    "repo_overview": "ask",
+    "lsp": "allow",
+    "doom_loop": "allow",
+    "skill": "ask",
+    "bash": {
+      // Default to asking permission
+      "*": "ask",
+      // Allowed commands
+      "grep *": "allow",
+      "rg *": "allow",
+      // Disallowed commands
+      "alias *": "deny",
+      "curl *": "deny",
+      "curlie *": "deny",
+      "wget *": "deny",
+      "axel *": "deny",
+      "aria2c *": "deny",
+      "nc *": "deny",
+      "telnet *": "deny",
+      "ssh *": "deny",
+      "lynx *": "deny",
+      "w3m *": "deny",
+      "links *": "deny",
+      "httpie *": "deny",
+      "zypper *": "deny",
+      "sudo *": "deny",
+      "xh *": "deny",
+      "http-prompt *": "deny",
+      "chrome *": "deny",
+      "firefox *": "deny",
+      "safari *": "deny",
+      "env *": "deny",
+      "command *": "deny",
+      "exec *": "deny",
+      "$(*)": "deny",
+      "eval *": "deny",
+      "bash *": "deny",
+      "sh *": "deny"
+    }
+  }
+}

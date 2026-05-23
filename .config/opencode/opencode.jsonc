@@ -51,6 +51,8 @@
       // Allowed commands
       "grep *": "allow",
       "rg *": "allow",
+      "ls *": "allow",
+      "tree *": "allow",
       // Disallowed commands
       "alias *": "deny",
       "curl *": "deny",

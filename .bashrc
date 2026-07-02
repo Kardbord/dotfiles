@@ -170,8 +170,13 @@ fi
 if [[ -d "${HOME}/.local/bin" ]]; then
   export PATH="${HOME}/.local/bin:$PATH"
 fi
+if [[ -d "${HOME}/.opencode/bin" ]]; then
+  export PATH="${HOME}/.opencode/bin:$PATH"
+fi
 
 if command -v tmux &> /dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
+  export TMUX_TMPDIR="${HOME}/.local/run/"
+  mkdir -p "${TMUX_TMPDIR}"
   exec tmux -u
 fi
 

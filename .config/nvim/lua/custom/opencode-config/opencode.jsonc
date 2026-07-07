@@ -72,8 +72,11 @@
       "ls *": "allow",
       "rg *": "allow",
       "tree *": "allow",
+      // Contextual commands
+      "*`*`*": "ask",
+      "*$(*)*": "ask",
+      "$(*)": "ask",
       // Disallowed commands
-      "$(*)": "deny",
       "alias *": "deny",
       "apt *": "deny",
       "apt-get *": "deny",

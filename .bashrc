@@ -180,17 +180,6 @@ if command -v tmux &> /dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] &&
   exec tmux -u
 fi
 
-# `direnv` is a shell extension that loads and unloads
-# environment variables based on the current directory
-# and the contents of any .envrc files within that
-# directory or its parents. This is useful for reducing
-# attack surface for exfiltration of environmental secrets
-# through supply chain attacks or other malicious behavior.
-# It also helps declutter dotfiles in your home directory.
-if command -v direnv &>/dev/null; then
-  eval "$(direnv hook bash)"
-fi
-
 if command -v fastfetch &> /dev/null; then
   fastfetch
 elif command -v neofetch &> /dev/null; then

@@ -122,19 +122,6 @@ alias l='ls -CF'
 #   sleep 10; alert
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 
-if [ -f ~/.bash_env ]; then
-  source ~/.bash_env
-fi
-
-# Alias definitions.
-# You may want to put all your additions into a separate file like
-# ~/.bash_aliases, instead of adding them here directly.
-# See /usr/share/doc/bash-doc/examples in the bash-doc package.
-
-if [ -f ~/.bash_aliases ]; then
-  . ~/.bash_aliases
-fi
-
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
 # sources /etc/bash.bashrc).
@@ -184,6 +171,22 @@ if command -v fastfetch &> /dev/null; then
   fastfetch
 elif command -v neofetch &> /dev/null; then
   neofetch
+fi
+
+if [ -f ~/.bash_aliases ]; then
+  . ~/.bash_aliases
+fi
+
+# .bash_env contains non-secret environment variables
+# that apply globally to the user.
+if [ -f ~/.bash_env ]; then
+  source ~/.bash_env
+fi
+
+# .bash_secrets sets up secrets management
+# that apply globally to the user.
+if [ -f ~/.bash_secrets ]; then
+  source ~/.bash_secrets
 fi
 
 [[ $(pwd) =~ ^.*MobaXterm.* ]] && cd

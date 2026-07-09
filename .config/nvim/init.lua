@@ -348,7 +348,7 @@ require('lazy').setup({
 
         -- `build` is used to run some command when the plugin is installed/updated.
         -- This is only run then, not every time Neovim starts up.
-        build = 'make',
+        build = require('custom.sandbox').build 'make',
 
         -- `cond` is a condition used to determine whether this plugin should be
         -- installed and loaded.
@@ -803,7 +803,7 @@ require('lazy').setup({
           if vim.fn.has 'win32' == 1 or vim.fn.executable 'make' == 0 then
             return
           end
-          return 'make install_jsregexp'
+          return require('custom.sandbox').build('make', 'install_jsregexp')
         end)(),
         dependencies = {
           -- `friendly-snippets` contains a variety of premade snippets.

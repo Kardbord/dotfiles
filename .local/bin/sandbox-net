@@ -1,0 +1,5 @@
+#!/bin/bash
+# sandbox-net - run a command in a bubblewrap sandbox with network access
+# Same as sandbox but without --unshare-net (for package installs needing registry access)
+
+NET_ARG="--share-net" "$(dirname "${BASH_SOURCE[0]}")/sandbox" "${@}"

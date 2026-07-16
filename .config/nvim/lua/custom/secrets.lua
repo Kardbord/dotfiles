@@ -13,4 +13,22 @@ function M.from_pass(key)
   return value
 end
 
+---Verify a file's SHA256 hash against an expected value.
+---@param filepath string
+---@param expected_sha256 string
+---@return boolean
+function M.verify_hash(filepath, expected_sha256)
+  local handle = io.popen(('sha256sum %q'):format(filepath))
+  if not handle then
+    return false
+  end
+  local result = handle:read '*l'
+  handle:close()
+  if not result then
+    return false
+  end
+  local actual = result:match('%S+')
+  return actual == expected_sha256
+end
+
 return M

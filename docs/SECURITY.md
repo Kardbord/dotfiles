@@ -29,9 +29,22 @@ arguments, and relies on a single well-maintained tool rather than
 bespoke sandbox configurations. Custom profiles can be added under
 `~/.config/firejail/` (e.g., `myapp.profile`).
 
-**One-time system setup (recommended).** Firejail is a setuid-root binary.
-The most secure compromise between convenience and auditability is to
-restrict its use to a dedicated group:
+**OpenSUSE (default behavior).** The firejail package on OpenSUSE is
+installed with the setuid bit set (`04750`) and ownership
+`root:firejail` — the `firejail` group is created automatically. The
+only required step is to add your user to the group:
+
+```
+sudo usermod -aG firejail $USER
+```
+
+Log out and back in for membership to take effect. These settings are
+managed by `permctl` and persist across package updates automatically.
+
+**Other distributions.** Firejail is a *setuid-root binary* — it runs
+with elevated privileges so it can create kernel sandbox primitives
+(namespaces, etc.). Restricting its use to a dedicated group is
+recommended:
 
 ```
 sudo groupadd firejail
@@ -40,14 +53,17 @@ sudo chown root:firejail $(which firejail)
 sudo chmod 4750 $(which firejail)
 ```
 
-This prevents arbitrary users or daemons on the system from invoking the
-sandbox — only members of the `firejail` group can. Log out and back in
-for group membership to take effect.
+Package updates may reset these permissions to defaults. See your
+distribution's documentation for how to make file permissions survive
+package updates. (If you're reading this on a distro other than
+OpenSUSE, please contribute the appropriate instructions!)
 
-Some distributions ship firejail without the setuid bit set (e.g., OpenSUSE
-Tumbleweed), requiring this step before the tool can be used at all.
-Others set it world-executable by default; the group restriction above is
-still a hardening improvement over the default.
+Verify permissions after setup or an update with:
+
+```
+ls -la $(which firejail)
+# Expected: -rwsr-x--- 1 root firejail ...
+```
 
 ### Filesystem Permissions
 

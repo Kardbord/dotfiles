@@ -24,10 +24,30 @@ selects the appropriate profile automatically based on the command name,
 leveraging community-maintained profiles for tools like `npm`, `pip`, and
 `make`.
 
-This approach reduced maintenance burden compared to hand-rolling `bwrap`
+This approach reduces maintenance burden compared to hand-rolling `bwrap`
 arguments, and relies on a single well-maintained tool rather than
 bespoke sandbox configurations. Custom profiles can be added under
 `~/.config/firejail/` (e.g., `myapp.profile`).
+
+**One-time system setup (recommended).** Firejail is a setuid-root binary.
+The most secure compromise between convenience and auditability is to
+restrict its use to a dedicated group:
+
+```
+sudo groupadd firejail
+sudo usermod -aG firejail $USER
+sudo chown root:firejail $(which firejail)
+sudo chmod 4750 $(which firejail)
+```
+
+This prevents arbitrary users or daemons on the system from invoking the
+sandbox — only members of the `firejail` group can. Log out and back in
+for group membership to take effect.
+
+Some distributions ship firejail without the setuid bit set (e.g., OpenSUSE
+Tumbleweed), requiring this step before the tool can be used at all.
+Others set it world-executable by default; the group restriction above is
+still a hardening improvement over the default.
 
 ### Filesystem Permissions
 

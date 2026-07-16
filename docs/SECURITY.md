@@ -16,14 +16,18 @@ here is to protect against low-hanging attack vectors wherever possible.
 Secrets live in an encrypted store, never in plaintext config. Retrieved at runtime
 as needed. Scoped minimally: API keys go only to tools that need them.
 
-### Opt-In Sandboxing (bubblewrap)
+### Opt-In Sandboxing (firejail)
 
-Explicit, not automatic. A `sandbox` function wraps commands in `bwrap` when you
-choose to. Avoids false-positive friction that leads to disabling the whole
-system. Default profile: read-only root filesystem, network isolation
-(`--unshare-net`), sensitive directories (`~/.ssh`, `~/.gnupg`, `~/.passage`) overlaid
-with empty tmpfs. Network-enabled variant exists for package installs
-needing registry access.
+Explicit, not automatic. A `firejail <cmd>` invocation wraps a command in a
+sandbox with an application-specific profile when you choose to. Firejail
+selects the appropriate profile automatically based on the command name,
+leveraging community-maintained profiles for tools like `npm`, `pip`, and
+`make`.
+
+This approach reduced maintenance burden compared to hand-rolling `bwrap`
+arguments, and relies on a single well-maintained tool rather than
+bespoke sandbox configurations. Custom profiles can be added under
+`~/.config/firejail/` (e.g., `myapp.profile`).
 
 ### Filesystem Permissions
 
@@ -38,10 +42,10 @@ This should be configured to your desired level by you or a system administrator
 
 ### Neovim Plugin Sandboxing
 
-Plugin build hooks should route through `custom/sandbox.lua`, wrapping build
-commands in `bwrap` with the same isolation profile as above. Spawned subprocesses
+Plugin build hooks route through `custom/sandbox.lua`, wrapping build
+commands in `firejail` with automatic profile selection. Spawned subprocesses
 should also be sandboxed. Graceful fallback to unsandboxed execution with a
-warning should be configured in case `bwrap` is unavailable.
+warning should be configured in case `firejail` is unavailable.
 
 ### Integrity Verification (Optional)
 
@@ -55,10 +59,10 @@ An adversary must defeat all of them simultaneously.
 
 | Attack Vector             | Secrets Manager           | Sandboxing                     | Filesystem                       | Firewall                   |
 |---------------------------|---------------------------|--------------------------------|----------------------------------|----------------------------|
-| Malicious Makefile        | Minimal secrets available | Minimal access to fs, net, env | Can't r/w/e outside allowed dirs | Outbound rules block exfil |
-| Compromised `npm` module  | Minimal secrets available | Minimal access to fs, net, env | Can't r/w/e outside allowed dirs | Outbound rules block exfil |
-| SUID privilege escalation | N/A                       | Minimal access to fs, net, env | `nosuid` mount stops it          | N/A                        |
-| Credential theft          | Minimal secrets available | Minimal access to fs, net, env | Can't r/w/e outside allowed dirs | Outbound rules block exfil |
+| Malicious Makefile        | Minimal secrets available | Per-profile restrictions       | Can't r/w/e outside allowed dirs | Outbound rules block exfil |
+| Compromised `npm` module  | Minimal secrets available | Per-profile restrictions       | Can't r/w/e outside allowed dirs | Outbound rules block exfil |
+| SUID privilege escalation | N/A                       | Per-profile restrictions       | `nosuid` mount stops it          | N/A                        |
+| Credential theft          | Minimal secrets available | Per-profile restrictions       | Can't r/w/e outside allowed dirs | Outbound rules block exfil |
 | Physical disk theft       | Secrets are encrypted     | N/A                            | Full-disk encryption             | N/A                        |
 
 **If sandboxing fails:** Firewall still blocks exfil, filesystem permissions still restrict writes, secrets are not stored in plaintext.
@@ -71,6 +75,8 @@ An adversary must defeat all of them simultaneously.
 
 1. **Opt-in, not automatic.** Explicit sandboxing reduces friction-driven workarounds.
 2. **Secrets are ephemeral.** Retrieved at runtime, injected into processes only when necessary.
-4. **Layered defense.** Sandboxing, filesystem permissions, firewall rules, and secret management each provide independent coverage.
-5. **Each layer stands alone.** If one fails, others still provide protections.
-6. **Convenience matters.** Over-engineered security gets bypassed. If the sandbox fights you, simplify it.
+3. **Community profiles.** Application-specific profiles are maintained by the firejail community, reducing the need for bespoke sandbox configuration.
+4. **Custom profiles.** User-specific profiles can be added under `~/.config/firejail/` for tools not covered by the default set.
+5. **Layered defense.** Sandboxing, filesystem permissions, firewall rules, and secret management each provide independent coverage.
+6. **Each layer stands alone.** If one fails, others still provide protections.
+7. **Convenience matters.** Over-engineered security gets bypassed. If the sandbox fights you, simplify it.

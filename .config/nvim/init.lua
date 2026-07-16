@@ -736,8 +736,8 @@ require('lazy').setup({
         'vale',
       })
       -- NOTE: Mason downloads pre-built binaries via internal spawn mechanisms
-      -- that are not trivially hookable with bwrap. Post-install build commands
-      -- for lazy.nvim plugins are sandboxed via custom/sandbox.lua.
+      -- that are not trivially sandboxed. Post-install build commands for
+      -- lazy.nvim plugins are sandboxed via custom/sandbox.lua.
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup {
@@ -972,9 +972,7 @@ require('lazy').setup({
   },
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
-    -- NOTE: :TSUpdate runs inside Neovim and can't be trivially wrapped in bwrap.
-    -- The parser compilation (cc subprocess) is not sandboxed. This is a known
-    -- limitation of the partial sandboxing approach for Mason/treesitter.
+    -- NOTE: :TSUpdate runs inside Neovim and can't be trivially sandboxed.
     build = ':TSUpdate',
     opts = {
       ensure_installed = {

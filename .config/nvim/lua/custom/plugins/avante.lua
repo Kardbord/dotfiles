@@ -13,11 +13,6 @@ return {
     opts = {
       -- this file can contain specific instructions for your project
       instructions_file = 'AGENTS.md',
-      -- Disabled tools for standard providers
-      disabled_tools = {
-        'bash', -- Disable the built-in bash tool (replaced by our custom bash_cmd tool)
-        'git_commit', -- Disable the built-in git commit tool (replaced by our custom git tool)
-      },
       mode = 'agentic',
       behaviour = {
         enable_fastapply = false,
@@ -26,12 +21,6 @@ return {
       },
       -- Use our custom tools for standard providers
       -- NOTE: Wrapped in a function to defer loading until avante modules are available
-      custom_tools = function()
-        return {
-          require 'custom.avante-tools.bash-tool',
-          require 'custom.avante-tools.git-tool',
-        }
-      end,
       provider = 'opencode',
       web_search_engine = {
         provider = 'tavily', -- tavily, serpapi, google, kagi, brave, or searxng

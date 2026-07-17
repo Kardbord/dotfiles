@@ -234,6 +234,31 @@ vim.api.nvim_create_user_command('LintInfo', function()
   end
 end, {})
 
+-- [[ Configure Treesitter ]] See `:help vim.treesitter`
+vim.treesitter.config.setup({
+  ensure_installed = {
+    'bash',
+    'c',
+    'cpp',
+    'diff',
+    'go',
+    'html',
+    'lua',
+    'luadoc',
+    'markdown',
+    'python',
+    'rust',
+    'vim',
+    'vimdoc',
+  },
+  auto_install = true,
+  highlight = {
+    enable = true,
+    additional_vim_regex_highlighting = { 'ruby' },
+  },
+  indent = { enable = true, disable = { 'ruby' } },
+})
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -972,55 +997,7 @@ require('lazy').setup({
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
   },
-  { -- Highlight, edit, and navigate code
-    'nvim-treesitter/nvim-treesitter',
-    -- NOTE: :TSUpdate runs inside Neovim and can't be trivially sandboxed.
-    build = ':TSUpdate',
-    opts = {
-      ensure_installed = {
-        'bash',
-        'c',
-        'cpp',
-        'diff',
-        'go',
-        'html',
-        'lua',
-        'luadoc',
-        'markdown',
-        'python',
-        'rust',
-        'vim',
-        'vimdoc',
-      },
 
-      -- Autoinstall languages that are not installed
-      auto_install = true,
-      highlight = {
-        enable = true,
-        -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
-        --  If you are experiencing weird indenting issues, add the language to
-        --  the list of additional_vim_regex_highlighting and disabled languages for indent.
-        additional_vim_regex_highlighting = { 'ruby' },
-      },
-      indent = { enable = true, disable = { 'ruby' } },
-    },
-    config = function(_, opts)
-      -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
-
-      -- Prefer git instead of curl in order to improve connectivity in some environments
-      require('nvim-treesitter.install').prefer_git = true
-      ---@diagnostic disable-next-line: missing-fields
-      require('nvim-treesitter.config').setup(opts)
-      require('nvim-treesitter').install(opts.ensure_installed)
-
-      -- There are additional nvim-treesitter modules that you can use to interact
-      -- with nvim-treesitter. You should go explore a few and see what interests you:
-      --
-      --    - Incremental selection: Included, see `:help nvim-treesitter-incremental-selection-mod`
-      --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
-      --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
-    end,
-  },
 
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and

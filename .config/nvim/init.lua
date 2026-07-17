@@ -221,6 +221,8 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 })
 
 -- Show linters for the current buffer's file type
+require 'custom.commands'
+
 vim.api.nvim_create_user_command('LintInfo', function()
   local filetype = vim.bo.filetype
   local linters = require('lint').linters_by_ft[filetype]

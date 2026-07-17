@@ -1,0 +1,1 @@
+TODO: Remove nvim-old once my custom settings have been migrated to the new nvim config.

@@ -65,6 +65,16 @@ ls -la $(which firejail)
 # Expected: -rwsr-x--- 1 root firejail ...
 ```
 
+**WSL2 (Windows Subsystem for Linux).** Firejail requires `container=lxc` to be
+set in the environment before invocation on WSL2. This can be done inline:
+
+```
+container=lxc firejail <cmd>
+```
+
+When using the Neovim sandbox module (`custom/sandbox.lua`), this is handled
+automatically — see [Neovim Plugin Sandboxing](#neovim-plugin-sandboxing).
+
 ### Filesystem Permissions
 
 Independent of this config. Provides a safety net in case sandboxing fails

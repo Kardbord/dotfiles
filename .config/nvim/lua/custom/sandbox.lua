@@ -5,6 +5,18 @@ local function has_firejail()
   return vim.fn.executable 'firejail' == 1
 end
 
+---Detect WSL2 and set the container=lxc env var required by firejail.
+---Called once at module load time.
+local function detect_wsl()
+  if vim.fn.has 'wsl' == 1 then
+    vim.env.container = 'lxc'
+    return true
+  end
+  return false
+end
+
+detect_wsl()
+
 ---Wrap a command in a firejail sandbox.
 ---Firejail auto-detects the appropriate profile based on the command name.
 ---Falls back to the unwrapped command if firejail is unavailable.

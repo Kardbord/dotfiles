@@ -11,10 +11,98 @@ here is to protect against low-hanging attack vectors wherever possible.
 
 ## Layers
 
-### Secrets Management (passage + age)
+### Secrets Management (gopass + age)
 
 Secrets live in an encrypted store, never in plaintext config. Retrieved at runtime
 as needed. Scoped minimally: API keys go only to tools that need them.
+
+#### Setup
+
+Install prerequisites:
+
+```
+# openSUSE
+sudo zypper install gopass age
+```
+
+**Create a new store:**
+
+1. Manually create a new, **empty** Git repository on your Git host (GitHub,
+   GitLab, etc.). Do not initialize it with a README, `.gitignore`, or license
+   — the repo must be completely empty or `--create` will fail.
+
+2. Initialize the local store and push it to the remote:
+
+   ```
+   gopass setup --crypto age \
+       --remote [EMAIL]:<user>/<repo>.git \
+       --create \
+       --name "<Your Name>" \
+       --email "<[EMAIL]>"
+   ```
+
+   You will be prompted to enter your age public key as a recipient. The
+   `--create` flag initializes a local store and pushes it to the pre-existing
+   empty remote. `--name` and `--email` set the git identity for the store's
+   commit history.
+
+**Usage:**
+
+Add a new secret:
+
+```
+gopass insert personal/github-token
+```
+
+This prompts for the secret value and stores it under `personal/github-token`.
+Organize secrets in a hierarchy by path (e.g., `work/aws-key`, `personal/github-token`).
+
+Retrieve a secret:
+
+```
+gopass show personal/github-token
+```
+
+Or copy it to the clipboard without echoing:
+
+```
+gopass -c personal/github-token
+```
+
+List all stored secrets:
+
+```
+gopass list
+```
+
+#### Multi-machine setup
+
+**Adding another machine (or another user):**
+
+1. On the new machine, initialize gopass — it will automatically generate an age identity at `~/.config/gopass/age/identities` on first use.
+2. Share the public key (the `age1...` line) with an existing store recipient.
+3. On an already-authorized machine, add the new public key as a recipient, then
+   re-encrypt the store and sync:
+   ```
+   gopass recipients add age1...
+   gopass fsck
+   gopass sync
+   ```
+   `gopass fsck` re-encrypts all secrets for the new recipient set.
+4. On the new machine, clone and sync the store:
+   ```
+   gopass clone --crypto age [EMAIL]:<user>/<repo>.git && gopass sync
+   ```
+
+**Add additional recipients (optional):**
+
+```
+gopass recipients add age1...
+gopass fsck
+```
+
+Recipients can be other users' age public keys. Run `gopass fsck` after adding to
+re-encrypt existing secrets for all recipients.
 
 ### Opt-In Sandboxing (firejail)
 

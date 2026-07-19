@@ -11,62 +11,63 @@ here is to protect against low-hanging attack vectors wherever possible.
 
 ## Layers
 
-### Secrets Management (gopass + age)
+### Secrets Management (gopass + gpg)
 
 Secrets live in an encrypted store, never in plaintext config. Retrieved at runtime
-as needed. Scoped minimally: API keys go only to tools that need them.
+as needed. Scope them minimally: API keys go only to tools that need them.
 
 #### Setup
 
-Install prerequisites:
+##### First time setup
+
+**Install prerequisites:**
 
 ```
 # openSUSE
-sudo zypper install gopass age
+zypper install gopass gpg2 git
 ```
 
-**Create a new store:**
+**Copy `gopass` configuration:**
 
-1. Manually create a new, **empty** Git repository on your Git host (GitHub,
-   GitLab, etc.). Do not initialize it with a README, `.gitignore`, or license
-   — the repo must be completely empty or `--create` will fail.
+```
+mkdir -m 700 -p "${HOME}/.config/gopass"
+cp ./.config/gopass/config "${HOME}/.config/gopass/config"
+```
 
-2. Initialize the local store and push it to the remote:
+**Set up `gopass` for age:**
 
-   ```
-   gopass setup --crypto age \
-       --remote [EMAIL]:<user>/<repo>.git \
-       --create \
-       --name "<Your Name>" \
-       --email "<[EMAIL]>"
-   ```
+```
+gopass setup --crypto age
+```
 
-   You will be prompted to enter your age public key as a recipient. The
-   `--create` flag initializes a local store and pushes it to the pre-existing
-   empty remote. `--name` and `--email` set the git identity for the store's
-   commit history.
+You will be prompted to create a new age keypair. When prompted to add a git
+remote, say "Yes". Provide the git remote, ex: `git@github.com:<org|owner>/<repo>.git`
+
+**(Optional) Add your SSH key as a recipient:**
+
+
 
 **Usage:**
 
 Add a new secret:
 
 ```
-gopass insert personal/github-token
+gopass insert personal/github/api-key <TOKEN>
 ```
 
-This prompts for the secret value and stores it under `personal/github-token`.
-Organize secrets in a hierarchy by path (e.g., `work/aws-key`, `personal/github-token`).
+This stores your personal github token under `personal/github/api-key`.
+Organize secrets in a hierarchy by path (e.g., `work/aws-key`, `personal/github/api-key`).
 
 Retrieve a secret:
 
 ```
-gopass show personal/github-token
+gopass show personal/github/api-key
 ```
 
 Or copy it to the clipboard without echoing:
 
 ```
-gopass -c personal/github-token
+gopass -c personal/github/api-key
 ```
 
 List all stored secrets:
@@ -75,34 +76,38 @@ List all stored secrets:
 gopass list
 ```
 
+Sync secrets with the git remote:
+
+```
+gopass sync
+```
+
+Inject a secret into a subprocess environment:
+
+```
+gopass env personal/github/api-key -- foocmd fooarg1 fooarg2
+```
+
 #### Multi-machine setup
 
 **Adding another machine (or another user):**
 
-1. On the new machine, initialize gopass — it will automatically generate an age identity at `~/.config/gopass/age/identities` on first use.
-2. Share the public key (the `age1...` line) with an existing store recipient.
+1. On the new machine, install gopass and set up a gopass GPG identity.
+2. Share the public key with an existing store recipient.
 3. On an already-authorized machine, add the new public key as a recipient, then
    re-encrypt the store and sync:
    ```
-   gopass recipients add age1...
+   gopass recipients add <PUBLIC-KEY>
    gopass fsck
    gopass sync
    ```
    `gopass fsck` re-encrypts all secrets for the new recipient set.
 4. On the new machine, clone and sync the store:
    ```
-   gopass clone --crypto age [EMAIL]:<user>/<repo>.git && gopass sync
+   gopass clone --crypto age git@github.com:<user>/<repo>.git && gopass sync
    ```
 
-**Add additional recipients (optional):**
-
-```
-gopass recipients add age1...
-gopass fsck
-```
-
-Recipients can be other users' age public keys. Run `gopass fsck` after adding to
-re-encrypt existing secrets for all recipients.
+   Now the new recipient can access the secrets in the store.
 
 ### Opt-In Sandboxing (firejail)
 

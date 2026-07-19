@@ -36,6 +36,7 @@ zypper install gopass age git
 ```
 mkdir -m 700 -p "${HOME}/.config/gopass"
 cp ./.config/gopass/config "${HOME}/.config/gopass/config"
+chmod 600 "${HOME}/.config/gopass/config"
 ```
 
 **Set up `gopass` for age:**
@@ -53,10 +54,12 @@ encrypts the file at `~/.config/gopass/age/identities` — without it, anyone wi
 filesystem access could steal your secret key. Enter the same passphrase when
 prompted again (it reads back the file to confirm the key was created).
 
-When prompted to add a git remote, say "Yes". Provide the git remote, ex:
+When prompted to add a git remote, say "Yes" if you want to sync your encrypted
+store across machines or users. You must provide a link to a newly created git
+remote with no contents. The syntax is `<email>:<org|owner>/<repo>.git` ex:
 
 ```
-git@github.com:<org|owner>/<repo>.git
+git@github.com:Kardbord/my-secret-repo.git
 ```
 
 **(Optional) Add your SSH key as a recipient:**
@@ -66,7 +69,8 @@ as a recipient so secrets are encrypted for it too:
 
 ```
 gopass recipients add "$(cat ~/.ssh/id_ed25519.pub)"
-gopass fsck
+gopass fsck --decrypt
+gopass sync
 ```
 
 **Avoiding repeated passphrase prompts:**
@@ -138,7 +142,7 @@ gopass env personal/github/api-key -- foocmd fooarg1 fooarg2
 Re-encrypt old secrets so that new recipients can read them:
 
 ```
-gopass fsck
+gopass fsck --decrypt
 gopass sync
 ```
 
@@ -154,12 +158,12 @@ add its **public key** as a recipient, re-encrypt, and push.
    then re-encrypt the store and sync:
    ```
    gopass recipients add <PUBLIC-KEY>
-   gopass fsck
+   gopass fsck --decrypt
    gopass sync
    ```
    The public key can be either an age-native key (`age1...`) or an SSH public key
-   (`ssh-ed25519 AAAAC3...`). `gopass fsck` re-encrypts all existing secrets for
-   the new recipient set.
+   (`ssh-ed25519 AAAAC3...`). `gopass fsck --decrypt` re-encrypts all existing
+   secrets for the new recipient set.
 
 2. On the new machine, install gopass and clone the store:
    ```

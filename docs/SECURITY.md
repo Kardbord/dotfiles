@@ -11,10 +11,14 @@ here is to protect against low-hanging attack vectors wherever possible.
 
 ## Layers
 
-### Secrets Management (gopass + gpg)
+### Secrets Management (gopass + age)
 
-Secrets live in an encrypted store, never in plaintext config. Retrieved at runtime
-as needed. Scope them minimally: API keys go only to tools that need them.
+Secrets live in an encrypted git-backed store, never in plaintext config. Retrieved
+at runtime as needed. Scope them minimally: API keys go only to tools that need them.
+
+Uses the [age](https://age-encryption.org) encryption backend. Your private key lives
+in a scrypt-encrypted identity file at `~/.config/gopass/age/identities`. SSH keys
+from `~/.ssh/` are also discovered and used as decryption identities automatically.
 
 #### Setup
 
@@ -24,7 +28,7 @@ as needed. Scope them minimally: API keys go only to tools that need them.
 
 ```
 # openSUSE
-zypper install gopass gpg2 git
+zypper install gopass age git
 ```
 
 **Copy `gopass` configuration:**
@@ -40,22 +44,65 @@ cp ./.config/gopass/config "${HOME}/.config/gopass/config"
 gopass setup --crypto age
 ```
 
-You will be prompted to create a new age keypair. When prompted to add a git
-remote, say "Yes". Provide the git remote, ex: `git@github.com:<org|owner>/<repo>.git`
+This generates a new secret store, a X25519 keypair, adds your public key
+(`age1...`) to the store's recipients list, and initializes a git repo to
+manage the store and track changes.
+
+You will be prompted to create a passphrase for your identity file. This passphrase
+encrypts the file at `~/.config/gopass/age/identities` — without it, anyone with
+filesystem access could steal your secret key. Enter the same passphrase when
+prompted again (it reads back the file to confirm the key was created).
+
+When prompted to add a git remote, say "Yes". Provide the git remote, ex:
+
+```
+git@github.com:<org|owner>/<repo>.git
+```
 
 **(Optional) Add your SSH key as a recipient:**
 
+The age backend auto-discovers SSH keys from `~/.ssh/`. To add your SSH public key
+as a recipient so secrets are encrypted for it too:
 
+```
+gopass recipients add "$(cat ~/.ssh/id_ed25519.pub)"
+gopass fsck
+```
+
+**Avoiding repeated passphrase prompts:**
+
+By default, the passphrase is cached in memory for the lifetime of a single
+`gopass` command. Since the CLI exits after each invocation, you'll be prompted
+on every command unless you use one of these strategies:
+
+- **Age agent** (recommended): caches decrypted identities in a background daemon.
+  ```
+  gopass config age.agent-enabled true
+  ```
+  The agent auto-starts on the first decrypt, prompts once, and handles subsequent
+  decryption without further prompts — even after `gopass` exits.
+
+- **Environment variable**: set the passphrase once per shell session.
+  ```
+  read -s GOPASS_AGE_PASSWORD
+  export GOPASS_AGE_PASSWORD
+  ```
+
+- **OS keychain**: stores the passphrase in the system keyring.
+  ```
+  gopass config age.usekeychain true
+  ```
 
 **Usage:**
 
 Add a new secret:
 
 ```
-gopass insert personal/github/api-key <TOKEN>
+gopass insert personal/github/api-key
 ```
 
-This stores your personal github token under `personal/github/api-key`.
+You will be prompted for the secret value.
+
 Organize secrets in a hierarchy by path (e.g., `work/aws-key`, `personal/github/api-key`).
 
 Retrieve a secret:
@@ -88,26 +135,43 @@ Inject a secret into a subprocess environment:
 gopass env personal/github/api-key -- foocmd fooarg1 fooarg2
 ```
 
+Re-encrypt old secrets so that new recipients can read them:
+
+```
+gopass fsck
+gopass sync
+```
+
 #### Multi-machine setup
+
+Each machine has its own keypair (age-native or SSH). Recipients in the store's
+`.age-recipients` file determine who can decrypt. To authorize a new machine,
+add its **public key** as a recipient, re-encrypt, and push.
 
 **Adding another machine (or another user):**
 
-1. On the new machine, install gopass and set up a gopass GPG identity.
-2. Share the public key with an existing store recipient.
-3. On an already-authorized machine, add the new public key as a recipient, then
-   re-encrypt the store and sync:
+1. On an already-authorized machine, add the new machine's public key as a recipient,
+   then re-encrypt the store and sync:
    ```
    gopass recipients add <PUBLIC-KEY>
    gopass fsck
    gopass sync
    ```
-   `gopass fsck` re-encrypts all secrets for the new recipient set.
-4. On the new machine, clone and sync the store:
-   ```
-   gopass clone --crypto age git@github.com:<user>/<repo>.git && gopass sync
-   ```
+   The public key can be either an age-native key (`age1...`) or an SSH public key
+   (`ssh-ed25519 AAAAC3...`). `gopass fsck` re-encrypts all existing secrets for
+   the new recipient set.
 
-   Now the new recipient can access the secrets in the store.
+2. On the new machine, install gopass and clone the store:
+   ```
+   gopass clone --crypto age [EMAIL]:<user>/<repo>.git
+   gopass sync
+   ```
+   No identity setup is needed if using SSH keys — the age backend auto-discovers
+   `~/.ssh/` and uses the corresponding private key for decryption. For age-native
+   keys, run `gopass setup --crypto age` first to create a local identity, then add
+   its public key as a recipient from an already-authorized machine.
+
+Now the new recipient can access the secrets in the store.
 
 ### Opt-In Sandboxing (firejail)
 

@@ -1,5 +1,3 @@
-[mounts]
-	path = /home/tkvarfordt/.local/share/gopass/stores/root
 [age]
 	usekeychain = false
 	agent-timeout = 0

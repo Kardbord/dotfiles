@@ -1,0 +1,23 @@
+[mounts]
+	path = /home/tkvarfordt/.local/share/gopass/stores/root
+[age]
+	usekeychain = false
+	agent-timeout = 0
+	agent-enabled = true
+[autosync]
+	interval = 1d
+[core]
+	notifications = false
+	noreminder = false
+	nopager = false
+	follow-references = false
+	exportkeys = true
+	cliptimeout = 45
+	casefold = true
+	autosync = true
+	autopush = true
+	autoimport = true
+[updater]
+	check = false
+[storage]
+	backend = gitfs

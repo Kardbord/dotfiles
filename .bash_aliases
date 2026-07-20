@@ -1,10 +1,10 @@
 alias vim='nvim'
 alias neovim='nvim'
 alias ll='ls -alh'
-alias rg='rg --hidden -n'
-alias rgi='rg --hidden -ni'
+alias rg='rg -g "!.git/*" --hidden -n'
+alias rgi='rg -iglob "!.git/*" --hidden -ni'
 #alias clip='xclip -selection clipboard -i <'
-#alias update='sudo zypper update -y && sudo zypper dup -y'
+#alias update='sudo zypper update -y && sudo zypper dup -y && sudo flatpak update -y && flatpak update --user -y'
 #alias avante='nvim -c "lua vim.defer_fn(function()require(\"avante.api\").zen_mode()end, 100)"'
 
 nvim() {

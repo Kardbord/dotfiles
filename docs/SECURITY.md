@@ -31,14 +31,6 @@ from `~/.ssh/` are also discovered and used as decryption identities automatical
 zypper install gopass age git
 ```
 
-**Copy `gopass` configuration:**
-
-```
-mkdir -m 700 -p "${HOME}/.config/gopass"
-cp ./.config/gopass/config "${HOME}/.config/gopass/config"
-chmod 600 "${HOME}/.config/gopass/config"
-```
-
 **Set up `gopass` for age:**
 
 ```

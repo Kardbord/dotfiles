@@ -10,6 +10,14 @@ _FLATPAK_ENABLE_SDK_EXT='node26,golang,rust,openjdk25'
 _NVIM_FLATPAK_XDG_DATA_HOME="${HOME}/.var/app/io.neovim.nvim/data"
 _NVIM_FLATPAK_DFLT_PATH='/app/bin:/usr/bin'
 _NVIM_FLATPAK_PATH="${_NVIM_FLATPAK_DFLT_PATH}:${_NVIM_FLATPAK_XDG_DATA_HOME}/tree-sitter/bin"
+_NVIM_REQUIRED_FLATPAKS=(
+  "io.neovim.nvim"
+  "org.freedesktop.Sdk"
+  "org.freedesktop.Sdk.Extension.golang"
+  "org.freedesktop.Sdk.Extension.node26"
+  "org.freedesktop.Sdk.Extension.openjdk25"
+  "org.freedesktop.Sdk.Extension.rust-stable"
+)
 
 _nvim_flatpak_run_cmd() {
   flatpak run \
@@ -28,11 +36,13 @@ _nvim_flatpak_ensure_deps() {
     echo "[sandbox] flatpak is not installed (see https://flatpak.org)" >&2
     return 1
   fi
-  if ! flatpak info io.neovim.nvim &>/dev/null; then
-    echo "[sandbox] neovim is not installed via flatpak (see https://flathub.org/en/apps/io.neovim.nvim)" >&2
-    return 1
-  fi
-  # TODO: check for SDKs
+
+  for dep in "${_NVIM_REQUIRED_FLATPAKS[@]}"; do
+    if ! flatpak info "${dep}" &>/dev/null; then
+      echo "[sandbox] ${dep} is not installed via flatpak (see https://flathub.org/en/apps/${dep})" >&2
+      return 1
+    fi
+  done
 
   # Check sandbox dependencies
   if ! _nvim_flatpak_run_cmd 'command -v tree-sitter' &>/dev/null; then

@@ -11,7 +11,6 @@ _REQUIRED_FLATPAK_SDK_EXTS=(
   "org.freedesktop.Sdk.Extension.node26"
   "org.freedesktop.Sdk.Extension.openjdk25"
   "org.freedesktop.Sdk.Extension.rust-stable"
-  "org.freedesktop.Sdk.Extension.texlive"
 )
 
 # Useful for flatpaks that use the FLATPAK_ENABLE_SDK_EXT environment variable, such as neovim.

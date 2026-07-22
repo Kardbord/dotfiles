@@ -98,10 +98,10 @@ _nvim_flatpak_ensure_deps() {
   fi
 }
 
-alias vim-host='nvim_host'
-alias neovim-host='nvim_host'
-alias nvim-host='nvim_host'
-nvim_host() {
+alias vim-nosandbox='nvim_nosandbox'
+alias neovim-nosandbox='nvim_nosandbox'
+alias nvim-nosandbox='nvim_nosandbox'
+nvim_nosandbox() {
   _nvim_flatpak_ensure_deps || return 1
   # Run neovim with default sandboxing.
   flatpak run \

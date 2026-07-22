@@ -21,10 +21,6 @@ if ! command -v opencode &>/dev/null; then
   return
 fi
 
-if [[ -d "${HOME}/.opencode/bin" ]]; then
-  export PATH="${HOME}/.opencode/bin:$PATH"
-fi
-
 _OPENCODE_REQUIRED_ENV=(
   "OPENROUTER_API_KEY=personal/openrouter/api-key"
 )

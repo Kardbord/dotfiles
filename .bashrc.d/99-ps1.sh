@@ -20,8 +20,8 @@ if [ -n "$force_color_prompt" ]; then
 fi
 
 if [[ "${color_prompt}" = yes ]]; then
-  PROMPT_BEFORE="\[\033[32m\][\[$(tput sgr0)\]\[\033[38;5;9m\]\u\[$(tput sgr0)\]\[\033[38;5;6m\]@\[$(tput sgr0)\]\[\033[38;5;13m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]\[\033[38;5;14m\]\A\[$(tput sgr0)\]"
-  PROMPT_AFTER="\[\033[38;5;15m\] \[$(tput sgr0)\]\[\033[38;5;226m\]\w\[$(tput sgr0)\]\[\033[32m\]]\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]"
+  PROMPT_BEFORE="\[\033[32m\][\[\033[0m\]\[\033[38;5;9m\]\u\[\033[0m\]\[\033[38;5;6m\]@\[\033[0m\]\[\033[38;5;13m\]\h\[\033[0m\]\[\033[38;5;15m\] \[\033[0m\]\[\033[38;5;14m\]\A\[\033[0m\]"
+  PROMPT_AFTER="\[\033[38;5;15m\] \[\033[0m\]\[\033[38;5;226m\]\w\[\033[0m\]\[\033[32m\]]\[\033[0m\]\[\033[38;5;15m\] \[\033[0m\]"
   PROMPT_COMMAND='__git_ps1 "$PROMPT_BEFORE" "$PROMPT_AFTER"'
   export GIT_PS1_SHOWDIRTYSTATE=
   export GIT_PS1_SHOWSTASHSTATE=

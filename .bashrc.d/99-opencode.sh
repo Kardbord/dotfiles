@@ -45,8 +45,7 @@ _opencode_flatpak_ensure_deps() {
 
 opencode() {
   _opencode_flatpak_ensure_deps || return 1
-  local secrets
-  secrets=$(_secrets_from_pass_or_env "${_OPENCODE_REQUIRED_ENV[@]}" "${_OPENCODE_OPTIONAL_ENV[@]}")
+  mapfile -t secrets <<< "$(_secrets_from_pass_or_env "${_OPENCODE_REQUIRED_ENV[@]}" "${_OPENCODE_OPTIONAL_ENV[@]}")"
   flatpak run \
     "${secrets[@]/#/--env=}" \
     --env=FLATPAK_ENABLE_SDK_EXT="${_FLATPAK_ENABLE_SDK_EXT}" \

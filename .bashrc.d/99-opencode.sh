@@ -16,11 +16,6 @@
 # See docs/SECURITY.md#sandboxing                        #
 # ------------------------------------------------------ #
 
-
-if ! command -v opencode &>/dev/null; then
-  return
-fi
-
 _OPENCODE_REQUIRED_ENV=(
   "OPENROUTER_API_KEY=personal/openrouter/api-key"
 )
@@ -59,6 +54,8 @@ opencode() {
     --nofilesystem=/media \
     --nofilesystem=/run/media \
     --nofilesystem=/mnt \
-    --filesystem="${PWD}"
+    --filesystem="${PWD}" \
+    --filesystem="${HOME}/.config/opencode" \
+    --command=opencode-cli \
     ai.opencode.opencode "${@}"
 }

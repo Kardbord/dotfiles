@@ -1,5 +1,20 @@
-# TODO: Add ascii art
-# TODO: Recommend flatpak installation for sandboxing
+# ------------------------------------------------------ #
+#                                          __            #
+#   ____  ____  ___  ____  _________  ____/ /__          #
+#  / __ \/ __ \/ _ \/ __ \/ ___/ __ \/ __  / _ \         #
+# / /_/ / /_/ /  __/ / / / /__/ /_/ / /_/ /  __/         #
+# \____/ .___/\___/_/ /_/\___/\____/\__,_/\___/          #
+#     /_/                                                #
+# ------------------------------------------------------ #
+# Opencode executes LLM-generated code — read, write,    #
+# run, install packages — all on the model's say-so.     #
+# One prompt injection is all it takes. I highly         #
+# recommend installing opencode via flatpak on any       #
+# system that supports it. Flatpak sandboxes the         #
+# process, containing the blast radius if the model      #
+# goes rogue. The config below works either way.         #
+# See docs/SECURITY.md#sandboxing                        #
+# ------------------------------------------------------ #
 
 
 if ! command -v opencode &>/dev/null; then
@@ -11,12 +26,12 @@ if [[ -d "${HOME}/.opencode/bin" ]]; then
 fi
 
 _OPENCODE_REQUIRED_ENV=(
-  "OPENROUTER_API_KEY="
+  "OPENROUTER_API_KEY=personal/openrouter/api-key"
 )
 
 _OPENCODE_OPTIONAL_ENV=(
-  "OPENAI_API_KEY="
-  "ANTHROPIC_API_KEY="
+  "OPENAI_API_KEY=personal/openai/api-key"
+  "ANTHROPIC_API_KEY=personal/anthropic/api-key"
 )
 
 opencode() {

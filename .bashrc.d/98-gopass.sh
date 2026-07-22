@@ -1,5 +1,17 @@
-# TODO: Add ascii art
-# TODO: Add blurb explaining gopass and why it's necessary
+# ------------------------------------------------------ #
+#    ____ _____  ____  ____ ___________                  #
+#   / __ `/ __ \/ __ \/ __ `/ ___/ ___/                  #
+#  / /_/ / /_/ / /_/ / /_/ (__  |__  )                   #
+#  \__, /\____/ .___/\__,_/____/____/                    #
+# /____/     /_/                                         #
+# ------------------------------------------------------ #
+# Secrets management layer: gopass + age backend.        #
+# Secrets are encrypted at rest, scoped per-tool,        #
+# and never live in plaintext config. Retrieved          #
+# at runtime, falling back to env vars if gopass         #
+# is unavailable.                                        #
+# See docs/SECURITY.md#secrets-management                #
+# ------------------------------------------------------ #
 _GOPASS_READY=
 
 # Retrieve a secret from gopass, falling back

@@ -30,15 +30,35 @@ _OPENCODE_OPTIONAL_ENV=(
   "ANTHROPIC_API_KEY=personal/anthropic/api-key"
 )
 
-opencode() {
+_opencode_flatpak_ensure_deps() {
+  _ensure_flatpak || return 1
+
+  if ! flatpak info "ai.opencode.opencode" &>/dev/null; then
+    echo "[sandbox] opencode is not installed via flatpak (see https://flathub.org/en/apps/ai.opencode.opencode)" >&2
+    return 1
+  fi
+
   if ! _secrets_are_set "${_OPENCODE_REQUIRED_ENV[@]}"; then
     echo "Opencode requires the following secrets in as environment variables (lhs) or gopass entries: ${_OPENCODE_REQUIRED_ENV[*]}" >&2
     return 1
   fi
 
   if ! _secrets_are_set "${_OPENCODE_OPTIONAL_ENV[@]}"; then
-    echo "Optional secrets not detected: ${_OPENCODE_OPTIONAL_ENV[*]}" >&2
+    echo "Opencode optional secrets not detected: ${_OPENCODE_OPTIONAL_ENV[*]}" >&2
   fi
+}
 
-  $(_secrets_from_pass_or_env "${_OPENCODE_REQUIRED_ENV[@]}" "${_OPENCODE_OPTIONAL_ENV[@]}") opencode
+opencode() {
+  _opencode_flatpak_ensure_deps || return 1
+  local secrets
+  secrets=$(_secrets_from_pass_or_env "${_OPENCODE_REQUIRED_ENV[@]}" "${_OPENCODE_OPTIONAL_ENV[@]}")
+  flatpak run \
+    "${secrets[@]/#/--env=}" \
+    --env=FLATPAK_ENABLE_SDK_EXT="${_FLATPAK_ENABLE_SDK_EXT}" \
+    --nofilesystem=home \
+    --nofilesystem=/media \
+    --nofilesystem=/run/media \
+    --nofilesystem=/mnt \
+    --filesystem="${PWD}"
+    ai.opencode.opencode "${@}"
 }

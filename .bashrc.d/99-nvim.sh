@@ -1,11 +1,25 @@
-alias ll='ls -alh'
-alias rg='rg -g "!.git/*" --hidden -n'
-alias rgi='rg -iglob "!.git/*" --hidden -ni'
-#alias clip='xclip -selection clipboard -i <'
-#alias update='sudo zypper update -y && sudo zypper dup -y && flatpak --user update -y && flatpak update -y'
-#alias avante='nvim -c "lua vim.defer_fn(function()require(\"avante.api\").zen_mode()end, 100)"'
+# ------------------------------------------------------ #
+#             ____  ___  ____ _   __(_)___ ___           #
+#            / __ \/ _ \/ __ \ | / / / __ `__ \          #
+#           / / / /  __/ /_/ / |/ / / / / / / /          #
+#          /_/ /_/\___/\____/|___/_/_/ /_/ /_/           #
+# ------------------------------------------------------ #
+# Neovim's greatest strength is also its greatest        #
+# weakness: pluggability. Plugins provide incredible     #
+# utility, but are extremely vulnerable to supply chain  #
+# compromise, especially in this day and age of AI. For  #
+# that reason, I highly encourage managing the nvim      #
+# installation via flatpak on any system that supports   #
+# it. Flatpak apps run in a sandbox, which significantly #
+# reduces the blast radius of any compromised tools.     #
+# This configuration reflects that recommendation, but   #
+# I did try to take care that none of the neovim config  #
+# present elsewhere in my dotfiles project relies on     #
+# running in a flatpak sandbox.                          #
+# ------------------------------------------------------ #
 
-# ----- Flatpak'd Neovim Setup ----- #
+alias avante='nvim -c "lua vim.defer_fn(function()require(\"avante.api\").zen_mode()end, 100)"'
+
 _FLATPAK_ENABLE_SDK_EXT='node26,golang,rust,openjdk25'
 _NVIM_FLATPAK_XDG_DATA_HOME="${HOME}/.var/app/io.neovim.nvim/data"
 _NVIM_FLATPAK_DFLT_PATH='/app/bin:/usr/bin'
@@ -25,6 +39,7 @@ _NVIM_FLATPAK_COMMON_ARGS=(
   "--filesystem=xdg-config/nvim"
 )
 
+# TODO: refactor this to use _secrest_from_pass_or_env
 # Environment secrets needed by neovim and or its plugins.
 # Key: environment variable
 # Val: gopass secret name

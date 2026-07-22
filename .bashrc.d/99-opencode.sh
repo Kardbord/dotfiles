@@ -54,7 +54,7 @@ opencode() {
     --nofilesystem=/run/media \
     --nofilesystem=/mnt \
     --filesystem="${PWD}" \
-    --filesystem="${HOME}/.config/opencode" \
+    --filesystem=xdg-config/opencode \
     --command=opencode-cli \
     ai.opencode.opencode "${@}"
 }

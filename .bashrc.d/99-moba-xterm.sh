@@ -1,1 +1,1 @@
-[[ $(pwd) =~ ^.*MobaXterm.* ]] && cd
+[[ $(pwd) =~ MobaXterm ]] && cd

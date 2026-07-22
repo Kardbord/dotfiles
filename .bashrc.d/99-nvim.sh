@@ -31,18 +31,12 @@ _NVIM_FLATPAK_COMMON_ARGS=(
   "--filesystem=xdg-config/nvim"
 )
 
-# TODO: refactor this to use _secrest_from_pass_or_env
-# Environment secrets needed by neovim and or its plugins.
-# Key: environment variable
-# Val: gopass secret name
-declare -A _NVIM_REQUIRED_SECRETS=(
-  ["OPENROUTER_API_KEY"]="personal/openrouter/api-key"
-  ["OPENAI_API_KEY"]="personal/openai/api-key"
-  ["ANTHROPIC_API_KEY"]="personal/anthropic/api-key"
-  ["HUGGINGFACE_API_KEY"]="personal/huggingface/api-key"
+_NVIM_REQUIRED_ENV=(
+  "OPENROUTER_API_KEY=personal/openrouter/api-key"
+  "OPENAI_API_KEY=personal/openai/api-key"
+  "ANTHROPIC_API_KEY=personal/anthropic/api-key"
+  "HUGGINGFACE_API_KEY=personal/huggingface/api-key"
 )
-
-_NVIM_FLATPAK_REQUIRED_ENV=() # Populated later
 
 _nvim_flatpak_run_cmd() {
   flatpak run \
@@ -68,18 +62,8 @@ _nvim_flatpak_ensure_deps() {
     _nvim_flatpak_run_cmd ". /usr/lib/sdk/node26/enable.sh && npm install -g --prefix='${_NVIM_FLATPAK_XDG_DATA_HOME}/tree-sitter' tree-sitter-cli"
   fi
 
-  # Check for required secrets
-  local missingenv=()
-  for envkey in "${!_NVIM_REQUIRED_SECRETS[@]}"; do
-    local storekey="${_NVIM_REQUIRED_SECRETS[${envkey}]}"
-    local secret
-    secret="$(gopass show "${storekey}" 2>/dev/null || printenv "${envkey}")"
-    [[ -z "${secret// }" ]] && missingenv+=("${envkey}")
-    _NVIM_FLATPAK_REQUIRED_ENV+=("--env=${envkey}=${secret}")
-  done
-
-  if [[ -n "${missingenv[*]}" ]]; then
-    echo "[nvim] Warning! Neovim plugin functionality may be limited without these missing secrets: ${missingenv[*]}" >&2
+  if ! _secrets_are_set "${_NVIM_REQUIRED_ENV[@]}"; then
+    echo "[nvim] Warning! Neovim plugin functionality may be limited without all of these secrets: ${_NVIM_REQUIRED_ENV[*]}" >&2
     sleep 2
   fi
 }
@@ -89,10 +73,12 @@ alias neovim-nosandbox='nvim_nosandbox'
 alias nvim-nosandbox='nvim_nosandbox'
 nvim_nosandbox() {
   _nvim_flatpak_ensure_deps || return 1
+  local secrets
+  secrets=$(_secrets_from_pass_or_env "${_NVIM_REQUIRED_ENV[@]}")
   # Run neovim with default sandboxing.
   flatpak run \
     "${_NVIM_FLATPAK_COMMON_ARGS[@]}" \
-    "${_NVIM_FLATPAK_REQUIRED_ENV[@]}" \
+    "${secrets[@]/#/--env=}" \
     io.neovim.nvim "${@}"
 }
 
@@ -100,10 +86,12 @@ alias vim='nvim'
 alias neovim='nvim'
 nvim(){
   _nvim_flatpak_ensure_deps || return 1
+  local secrets
+  secrets=$(_secrets_from_pass_or_env "${_NVIM_REQUIRED_ENV[@]}")
   # Run neovim with extra sandboxing.
   flatpak run \
     "${_NVIM_FLATPAK_COMMON_ARGS[@]}" \
-    "${_NVIM_FLATPAK_REQUIRED_ENV[@]}" \
+    "${secrets[@]/#/--env=}" \
     --nofilesystem=host \
     --filesystem="${PWD}" \
     io.neovim.nvim "${@}"

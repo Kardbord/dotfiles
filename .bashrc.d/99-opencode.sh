@@ -23,6 +23,7 @@ _OPENCODE_REQUIRED_ENV=(
 _OPENCODE_OPTIONAL_ENV=(
   "OPENAI_API_KEY=personal/openai/api-key"
   "ANTHROPIC_API_KEY=personal/anthropic/api-key"
+  "HUGGINGFACE_API_KEY=personal/huggingface/api-key"
 )
 
 _opencode_flatpak_ensure_deps() {

@@ -8,3 +8,7 @@ if command -v rg &>/dev/null; then
   alias rg='rg -g "!.git/*" --hidden -n'
   alias rgi='rg -i -g "!.git/*" --hidden -n'
 fi
+
+if command -v xclip &>/dev/null; then
+  alias clip='xclip -i -selection clipboard '
+fi

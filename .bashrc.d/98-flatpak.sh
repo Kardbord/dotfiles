@@ -3,7 +3,6 @@ _REQUIRED_FLATPAKS=(
 )
 
 _REQUIRED_FLATPAK_SDK_EXTS=(
-  "org.freedesktop.Sdk.Extension.dotnet"
   "org.freedesktop.Sdk.Extension.dotnet10"
   "org.freedesktop.Sdk.Extension.golang"
   "org.freedesktop.Sdk.Extension.llvm22"

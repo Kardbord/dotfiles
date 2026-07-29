@@ -12,6 +12,9 @@
 # is unavailable.                                        #
 # See docs/SECURITY.md#secrets-management                #
 # ------------------------------------------------------ #
+
+export GOPASS_AGE_STDIN_PASSPHRASE=1
+
 _GOPASS_READY=
 
 # Retrieve a secret from gopass, falling back

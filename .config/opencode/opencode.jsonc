@@ -90,6 +90,7 @@
               {
                 "id": "fusion",
                 "analysis_models": [
+                  // 8 models max
                   "cohere/north-mini-code:free",
                   "deepseek/deepseek-v4-flash-0731",
                   "google/gemma-4-26b-a4b-it:free",
@@ -100,7 +101,7 @@
                   "xiaomi/mimo-v2.5",
                 ],
                 "model": "deepseek/deepseek-v4-flash-0731",
-                "max_tool_calls": 8
+                "max_tool_calls": 8 // 16 tool calls max
               }
             ]
           }

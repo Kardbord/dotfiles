@@ -105,34 +105,13 @@
             ]
           }
         },
-        "openrouter/fusion-flash": {
-          "options": {
-            "plugins": [
-              {
-                "id": "fusion",
-                "analysis_models": [
-                  "cohere/north-mini-code:free",
-                  "deepseek/deepseek-v4-flash-0731",
-                  "google/gemma-4-26b-a4b-it:free",
-                  "inclusionai/ling-3.0-flash:free",
-                  "nvidia/nemotron-3-ultra-550b-a55b:free",
-                  "poolside/laguna-s-2.1",
-                  "tencent/hy3-preview",
-                  "xiaomi/mimo-v2.5",
-                ],
-                "model": "deepseek/deepseek-v4-flash-0731",
-                "max_tool_calls": 8
-              }
-            ]
-          }
-        }
       },
       "options": {
         "apiKey": "{env:OPENROUTER_API_KEY}"
       }
     }
   },
-  "model": "openrouter/deepseek/deepseek-v4-flash",
+  "model": "openrouter/deepseek/deepseek-v4-flash-0731",
   "small_model": "openrouter/openrouter/free",
   "logLevel": "WARN",
   "autoupdate": true,

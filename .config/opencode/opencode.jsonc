@@ -6,24 +6,127 @@
   "provider": {
     "openrouter": {
       "whitelist": [
+        // Routers
+        "openrouter/auto-beta",
         "openrouter/free",
-        "openrouter/auto",
+        "openrouter/fusion",
+        "openrouter/fusion-flash",
+        "openrouter/fusion-flash:free",
+        "openrouter/fusion:free",
+        "openrouter/pareto-code",
+
+        // Latest and greatest
+        "~anthropic/claude-fable-latest",
+        "~anthropic/claude-haiku-latest",
+        "~anthropic/claude-opus-latest",
+        "~anthropic/claude-sonnet-latest",
+        "~google/gemini-flash-latest",
+        "~google/gemini-pro-latest",
+        "~moonshotai/kimi-latest",
+
+        // Explicit models
+        "cohere/north-mini-code:free",
+        "deepseek/deepseek-v4-flash-0731",
         "deepseek/deepseek-v4-pro",
-        "deepseek/deepseek-v4-flash",
-        "anthropic/claude-haiku-4.5",
-        "moonshotai/kimi-k2.6",
-        "qwen/qwen3.6-flash",
-        "mistralai/devstral-2512",
-        "google/gemini-3.5-flash",
-        "google/gemma-4-31b-it:free",
-        "z-ai/glm-5.1",
-        "xiaomi/mimo-v2.5",
-        "minimax/minimax-m2.7",
+        "google/gemini-3.5-flash-lite",
+        "google/gemma-4-26b-a4b-it",
+        "google/gemma-4-31b-it",
         "ibm-granite/granite-4.1-8b",
-        "kwaipilot/kat-coder-pro-v2",
+        "inception/mercury-2",
+        "inclusionai/ling-3.0-flash:free",
         "inclusionai/ring-2.6-1t",
-        "inception/mercury-2"
+        "kwaipilot/kat-coder-air-v2.5",
+        "minimax/minimax-m3",
+        "mistralai/mistral-small-2603",
+        "moonshotai/kimi-k2.7-code",
+        "moonshotai/kimi-k3",
+        "nex-agi/nex-n2-pro",
+        "nvidia/nemotron-3-super-120b-a12b",
+        "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "poolside/laguna-s-2.1",
+        "qwen/qwen3-coder-next",
+        "qwen/qwen3.7-flash",
+        "qwen/qwen3.7-plus",
+        "tencent/hy3",
+        "xiaomi/mimo-v2.5-pro",
+        "z-ai/glm-5.2",
       ],
+      "models": {
+        "openrouter/auto-beta": {
+          "options": {
+            "plugins": [
+              {
+                "id": "auto-router",
+                "cost_tier": "high",
+                "allowed_models": [
+                  "deepseek/*",
+                  "google/gemma-*",
+                  "inception/mercury-2",
+                  "minimax/*",
+                  "mistralai/code*",
+                  "mistralai/mistral-small*",
+                  "moonshotai/*",
+                  "qwen/*",
+                  "xiaomi/*",
+                  "z-ai/*",
+                ]
+              }
+            ]
+          }
+        },
+        "openrouter/pareto-code": {
+          "options": {
+            "plugins": [
+              {
+                "id": "pareto-router",
+                "min_coding_score": 0.33
+              }
+            ]
+          }
+        },
+        "openrouter/fusion": {
+          "options": {
+            "plugins": [
+              {
+                "id": "fusion",
+                "analysis_models": [
+                  "cohere/north-mini-code:free",
+                  "deepseek/deepseek-v4-flash-0731",
+                  "google/gemma-4-26b-a4b-it:free",
+                  "inclusionai/ling-3.0-flash:free",
+                  "nvidia/nemotron-3-ultra-550b-a55b:free",
+                  "poolside/laguna-s-2.1",
+                  "tencent/hy3-preview",
+                  "xiaomi/mimo-v2.5",
+                ],
+                "model": "deepseek/deepseek-v4-flash-0731",
+                "max_tool_calls": 8
+              }
+            ]
+          }
+        },
+        "openrouter/fusion-flash": {
+          "options": {
+            "plugins": [
+              {
+                "id": "fusion",
+                "analysis_models": [
+                  "cohere/north-mini-code:free",
+                  "deepseek/deepseek-v4-flash-0731",
+                  "google/gemma-4-26b-a4b-it:free",
+                  "inclusionai/ling-3.0-flash:free",
+                  "nvidia/nemotron-3-ultra-550b-a55b:free",
+                  "poolside/laguna-s-2.1",
+                  "tencent/hy3-preview",
+                  "xiaomi/mimo-v2.5",
+                ],
+                "model": "deepseek/deepseek-v4-flash-0731",
+                "max_tool_calls": 8
+              }
+            ]
+          }
+        }
+      },
       "options": {
         "apiKey": "{env:OPENROUTER_API_KEY}"
       }
@@ -67,14 +170,11 @@
     "doom_loop": "allow",
     "skill": "ask",
     "bash": {
-      // Default to asking permission
       "*": "ask",
-      // Allowed commands
       "grep *": "allow",
       "ls *": "allow",
       "rg *": "allow",
       "tree *": "allow",
-      // Disallowed commands
       "$(*)": "deny",
       "alias *": "deny",
       "apt *": "deny",

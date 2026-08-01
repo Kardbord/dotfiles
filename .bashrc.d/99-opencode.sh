@@ -46,6 +46,7 @@ _opencode_flatpak_ensure_deps() {
 
 opencode() {
   _opencode_flatpak_ensure_deps || return 1
+  local -a secrets
   mapfile -t secrets <<< "$(_secrets_from_pass_or_env "${_OPENCODE_REQUIRED_ENV[@]}" "${_OPENCODE_OPTIONAL_ENV[@]}")"
   flatpak run \
     "${secrets[@]/#/--env=}" \

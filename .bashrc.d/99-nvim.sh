@@ -74,6 +74,7 @@ alias neovim-nosandbox='nvim_nosandbox'
 alias nvim-nosandbox='nvim_nosandbox'
 nvim_nosandbox() {
   _nvim_flatpak_ensure_deps || return 1
+  local -a secrets
   mapfile -t secrets <<< "$(_secrets_from_pass_or_env "${_NVIM_REQUIRED_ENV[@]}")"
   # Run neovim with default sandboxing.
   flatpak run \
@@ -86,6 +87,7 @@ alias vim='nvim'
 alias neovim='nvim'
 nvim(){
   _nvim_flatpak_ensure_deps || return 1
+  local -a secrets
   mapfile -t secrets <<< "$(_secrets_from_pass_or_env "${_NVIM_REQUIRED_ENV[@]}")"
   # Run neovim with extra sandboxing.
   flatpak run \

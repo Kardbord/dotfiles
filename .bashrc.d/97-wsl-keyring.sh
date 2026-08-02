@@ -14,4 +14,6 @@ if [[ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]]; then
   else
     echo "[wsl-secrets] gnome-keyring-daemon is not installed (see https://gitlab.gnome.org/GNOME/gnome-keyring/)" >&2
   fi
+else
+  echo "[wsl-secrets] cannnot launch gnome-keyring-daemon, dbus is not running" >&2
 fi

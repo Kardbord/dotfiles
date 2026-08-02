@@ -2,7 +2,7 @@
 
 if [[ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ]]; then
   if command -v dbus-launch &>/dev/null; then
-    eval "$(dbus-launch --sh-syntax)" &>/dev/null
+    eval "$(dbus-launch --sh-syntax 2>/dev/null)"
   else
     echo "[dbus] dbus is not installed (see https://www.freedesktop.org/wiki/Software/dbus/)" >&2
   fi

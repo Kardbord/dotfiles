@@ -8,5 +8,5 @@ while IFS='=' read -r key val; do
   val="${val%\"}"
   val="${val#\'}"
   val="${val%\'}"
-  export "OS_${key}=${val}"
+  declare "_OS_${key}=${val}"
 done < /etc/os-release

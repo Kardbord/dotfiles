@@ -17,7 +17,5 @@ _osc_ensure_deps() {
 
 osc() {
   _osc_ensure_deps || return 1
-  local -a secrets
-  mapfile -t secrets <<< "$(_secrets_from_pass_or_env "${_OSC_REQUIRED_ENV[@]}")"
-  env "${secrets[@]}" osc "${@}"
+  _run_with_secrets "${_OSC_REQUIRED_ENV[@]}" -- command osc "${@}"
 }

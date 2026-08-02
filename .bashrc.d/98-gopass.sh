@@ -17,27 +17,6 @@ export GOPASS_AGE_STDIN_PASSPHRASE=1
 
 _GOPASS_READY=
 
-# Retrieve a secret from gopass, falling back
-# to the environment variable if it is set.
-# Takes at least one argument in the format
-#   ENVVAR1=gopass/path1 ENVVAR2=gopass/path2
-# and outputs secret variables in the format
-#   ENVVAR1=secret1 ENVVAR2=secret2
-_secrets_from_pass_or_env() {
-  [[ -z "${*}" ]] && return 1
-  for arg in "${@}"; do
-    local envvar="${arg%%=*}"
-    local gppath="${arg#*=}"
-    local secret
-    if [[ -n "${_GOPASS_READY}" ]]; then
-      secret="$(gopass show "${gppath}" 2>/dev/null || printenv "${envvar}")"
-    else
-      secret="$(printenv "${envvar}")"
-    fi
-    echo "${envvar}=${secret}"
-  done
-}
-
 # Check if the secrets are set.
 # Takes at least one argument in the format
 #   ENVVAR1=gopass/path1 ENVVAR2=gopass/path2
@@ -57,6 +36,54 @@ _secrets_are_set() {
     [[ -z "${secret}" ]] && return 1
   done
   return 0
+}
+
+# Run a command with secrets injected into its environment.
+#
+# Usage: _run_with_secrets ENVVAR1=gopass/path1 ENVVAR2=gopass/path2 -- command args...
+#
+# Secrets are resolved from gopass (falling back to env vars) and
+# passed via shell assignment syntax (VAR=value command), not `env`,
+# so credentials never appear in argv (/proc/cmdline).
+# Values are escaped with printf '%q' before eval, preventing injection.
+_run_with_secrets() {
+  local -a env_parts=()
+  local arg key gppath secret
+
+  while (( $# )); do
+    arg="$1"; shift
+    [[ "$arg" == "--" ]] && break
+
+    key="${arg%%=*}"
+    gppath="${arg#*=}"
+
+    [[ ! "$key" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]] && {
+      echo "[_run_with_secrets] invalid env var name: '$key'" >&2
+      return 1
+    }
+
+    if [[ -n "${_GOPASS_READY}" ]]; then
+      secret="$(gopass show "${gppath}" 2>/dev/null || printenv "${key}")"
+    else
+      secret="$(printenv "${key}")"
+    fi
+
+    [[ -z "${secret}" ]] && {
+      echo "[_run_with_secrets] could not resolve secret for '${key}'" >&2
+      return 1
+    }
+
+    env_parts+=("${key}=$(printf '%q' "${secret}")")
+  done
+
+  (( $# )) || { echo "[_run_with_secrets] no command specified after --" >&2; return 1; }
+
+  local -a cmd_parts=()
+  for arg in "$@"; do
+    cmd_parts+=("$(printf '%q' "${arg}")")
+  done
+
+  eval "${env_parts[*]} ${cmd_parts[*]}"
 }
 
 if ! command -v gopass &>/dev/null; then

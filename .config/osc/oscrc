@@ -1,0 +1,14 @@
+# see oscrc(5) man page for the full list of available options
+
+[general]
+# Default URL to the API server.
+# Credentials and other `apiurl` specific settings must be configured in a `[$apiurl]` config section.
+apiurl=https://api.opensuse.org
+
+[https://api.opensuse.org]
+# aliases=
+# user=
+# pass=
+# credentials_mgr_class=osc.credentials...
+user=Kardbord
+credentials_mgr_class=osc.credentials.KeyringCredentialsManager:keyutils.osc.OscKernelKeyringBackend

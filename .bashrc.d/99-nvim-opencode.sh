@@ -91,3 +91,37 @@ nvim() {
       --filesystem="${PWD}" \
       io.neovim.nvim "$@"
 }
+
+# ------------------------------------------------------ #
+#                                          __            #
+#   ____  ____  ___  ____  _________  ____/ /__          #
+#  / __ \/ __ \/ _ \/ __ \/ ___/ __ \/ __  / _ \         #
+# / /_/ / /_/ /  __/ / / / /__/ /_/ / /_/ /  __/         #
+# \____/ .___/\___/_/ /_/\___/\____/\__,_/\___/          #
+#     /_/                                                #
+# ------------------------------------------------------ #
+# Opencode executes LLM-generated code — read, write,    #
+# run, install packages — all on the model's say-so.     #
+# One prompt injection is all it takes. I highly         #
+# recommend installing opencode via flatpak on any       #
+# system that supports it. Flatpak sandboxes the         #
+# process, containing the blast radius if the model      #
+# goes rogue. The config below works either way.         #
+# See docs/SECURITY.md#sandboxing                        #
+# ------------------------------------------------------ #
+# TODO: figure out a better solution for sandboxing opencode
+opencode() {
+  _nvim_flatpak_ensure_deps || return 1
+  # Kind of jank, but as of this writing the opencode
+  # flatpak only includes the electron app and not the
+  # TUI, which is all I care about. So for now, we launch
+  # opencode out of the nvim flatpak since it has to run
+  # opencode anyway for the CodeCompanion plugin.
+  _run_with_secrets "${_NVIM_REQUIRED_ENV[@]}" -- \
+    flatpak run \
+      "${_NVIM_FLATPAK_COMMON_ARGS[@]}" \
+      --nofilesystem=host \
+      --filesystem="${PWD}" \
+      --command="sh" \
+      io.neovim.nvim -c ". /usr/lib/sdk/node26/enable.sh && npx --yes opencode-ai $*"
+}

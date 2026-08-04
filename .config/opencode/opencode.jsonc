@@ -151,10 +151,6 @@
     "skill": "allow",
     "bash": {
       "*": "ask",
-      "grep *": "allow",
-      "ls *": "allow",
-      "rg *": "allow",
-      "tree *": "allow",
       "$(*)": "deny",
       "alias *": "deny",
       "apt *": "deny",

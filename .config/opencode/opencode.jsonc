@@ -148,7 +148,7 @@
     "repo_overview": "ask",
     "lsp": "allow",
     "doom_loop": "allow",
-    "skill": "ask",
+    "skill": "allow",
     "bash": {
       "*": "ask",
       "grep *": "allow",

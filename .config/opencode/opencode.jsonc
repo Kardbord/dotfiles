@@ -4,6 +4,7 @@
     "openrouter"
   ],
   "mcp": {
+    // File system navigation, search, etc.
     "filesystem": {
       "type": "local",
       "command": [
@@ -11,6 +12,39 @@
       ],
       "enabled": true,
     },
+
+    // Composio is an MCP gateway which manages oauth
+    // to other MCP servers via web portal. It is my
+    // primary provider for remote MCP. Piece-meal
+    // MCP servers are configured below in case I
+    // hit my free Composio usage limit, but
+    // disabled by default.
+    "composio": {
+      "type": "remote",
+      "url": "https://connect.composio.dev/mcp",
+      "headers": {
+        "x-consumer-api-key": "{env:COMPOSIO_API_KEY}"
+      },
+      "enabled": true,
+    },
+
+    // Web search and fetch.
+    // Exa has a keyless free tier.
+    "exa": {
+      "type": "remote",
+      "url": "https://mcp.exa.ai/mcp",
+      "enabled": false
+    },
+
+    // Documentation references.
+    // Has a keyless free tier.
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "enabled": false
+    },
+
+    // GitHub integration
     "github": {
       "type": "local",
       "command": [
@@ -19,7 +53,7 @@
         "stdio", "--read-only", "--toolsets",
         "actions,git,context,repos,issues,pull_requests"
       ],
-      "enabled": true,
+      "enabled": false,
       "environment": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "{env:GITHUB_PERSONAL_ACCESS_TOKEN}",
         "GOPATH": "{env:XDG_DATA_HOME}/go",
@@ -158,9 +192,15 @@
     // NOTE: this MCP server is scoped to the CWD
     "filesystem_*": "allow",
 
+    // Composio MCP
+    "composio_*": "allow",
+
     // Github MCP
     // NOTE: this is acceptable only because we are running the github mcp server in read-only mode
     "github_*": "allow",
+
+    // Exa MCP
+    "exa_*": "allow",
 
     // OpenCode built-ins
     "read": {

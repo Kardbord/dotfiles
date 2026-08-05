@@ -37,6 +37,7 @@ _NVIM_REQUIRED_ENV=(
   "OPENAI_API_KEY=personal/openai/api-key"
   "ANTHROPIC_API_KEY=personal/anthropic/api-key"
   "HUGGINGFACE_API_KEY=personal/huggingface/api-key"
+  "GITHUB_PERSONAL_ACCESS_TOKEN=personal/github/ro-pat"
 )
 
 _nvim_flatpak_run_cmd() {

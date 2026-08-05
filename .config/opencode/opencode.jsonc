@@ -3,6 +3,22 @@
   "enabled_providers": [
     "openrouter"
   ],
+  "mcp": {
+    "github": {
+      "type": "local",
+      "command": [
+        "sh", "-c",
+        ". /usr/lib/sdk/golang/enable.sh && go run github.com/github/github-mcp-server/cmd/github-mcp-server@latest stdio --read-only --toolsets actions,git,context,repos,issues,pull_requests"
+      ],
+      "enabled": true,
+      "environment": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "{env:GITHUB_PERSONAL_ACCESS_TOKEN}",
+        "GOPATH": "{env:XDG_DATA_HOME}/go",
+        "GOMODCACHE": "{env:XDG_DATA_HOME}/go/pkg/mod",
+        "GOCACHE": "{env:XDG_CACHE_HOME}/go-build"
+      }
+    }
+  },
   "provider": {
     "openrouter": {
       "whitelist": [
@@ -127,6 +143,7 @@
   },
   "permission": {
     "*": "ask",
+    "github_*": "allow", // NOTE: this is acceptable only because we are running the github mcp server in read-only mode
     "read": {
       "*": "allow",
       "*.env": "deny",
@@ -151,7 +168,6 @@
     "skill": "allow",
     "bash": {
       "*": "ask",
-      "$(*)": "deny",
       "alias *": "deny",
       "apt *": "deny",
       "apt-get *": "deny",
@@ -183,6 +199,6 @@
       "xh *": "deny",
       "yum *": "deny",
       "zypper *": "deny"
-    }
+    },
   }
 }

@@ -41,12 +41,17 @@ _NVIM_REQUIRED_ENV=(
 )
 
 _nvim_flatpak_run_cmd() {
+  local sdk_ext setup='' exts
+  IFS=',' read -ra exts <<< "${_FLATPAK_ENABLE_SDK_EXT}"
+  for sdk_ext in "${exts[@]}"; do
+    setup+=". /usr/lib/sdk/${sdk_ext}/enable.sh; "
+  done
   flatpak run \
     "${_NVIM_FLATPAK_COMMON_ARGS[@]}" \
     --nofilesystem=host \
     --command=sh \
     io.neovim.nvim \
-    -c "${*}"
+    -c "${setup}${*}"
 }
 
 _nvim_flatpak_ensure_deps() {
@@ -61,7 +66,7 @@ _nvim_flatpak_ensure_deps() {
 
   if ! _nvim_flatpak_run_cmd 'command -v tree-sitter' &>/dev/null; then
     echo "[sandbox] bootstrapping nvim sandbox with tree-sitter-cli..."
-    _nvim_flatpak_run_cmd ". /usr/lib/sdk/node26/enable.sh && npm install -g --prefix='${_NVIM_FLATPAK_XDG_DATA_HOME}/tree-sitter' tree-sitter-cli"
+    _nvim_flatpak_run_cmd "npm install -g --prefix='${_NVIM_FLATPAK_XDG_DATA_HOME}/tree-sitter' tree-sitter-cli"
   fi
 
   if ! _secrets_are_set "${_NVIM_REQUIRED_ENV[@]}"; then

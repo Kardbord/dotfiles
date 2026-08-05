@@ -4,6 +4,13 @@
     "openrouter"
   ],
   "mcp": {
+    "filesystem": {
+      "type": "local",
+      "command": [
+        "npx", "--yes", "@modelcontextprotocol/server-filesystem", "./",
+      ],
+      "enabled": true,
+    },
     "github": {
       "type": "local",
       "command": [
@@ -144,8 +151,18 @@
     "reserved": 10000
   },
   "permission": {
+    // Default to asking
     "*": "ask",
-    "github_*": "allow", // NOTE: this is acceptable only because we are running the github mcp server in read-only mode
+
+    // filesystem MCP
+    // NOTE: this MCP server is scoped to the CWD
+    "filesystem_*": "allow",
+
+    // Github MCP
+    // NOTE: this is acceptable only because we are running the github mcp server in read-only mode
+    "github_*": "allow",
+
+    // OpenCode built-ins
     "read": {
       "*": "allow",
       "*.env": "deny",

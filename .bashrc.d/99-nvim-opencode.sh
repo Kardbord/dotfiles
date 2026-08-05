@@ -44,11 +44,12 @@ _nvim_flatpak_run_cmd() {
   local sdk_ext setup='' exts
   IFS=',' read -ra exts <<< "${_FLATPAK_ENABLE_SDK_EXT}"
   for sdk_ext in "${exts[@]}"; do
-    setup+=". /usr/lib/sdk/${sdk_ext}/enable.sh; "
+    setup+="[[ -f /usr/lib/sdk/${sdk_ext}/enable.sh ]] && . /usr/lib/sdk/${sdk_ext}/enable.sh; "
   done
   flatpak run \
     "${_NVIM_FLATPAK_COMMON_ARGS[@]}" \
     --nofilesystem=host \
+    --filesystem="${PWD}" \
     --command=sh \
     io.neovim.nvim \
     -c "${setup}${*}"
@@ -124,10 +125,5 @@ opencode() {
   # opencode out of the nvim flatpak since it has to run
   # opencode anyway for the CodeCompanion plugin.
   _run_with_secrets "${_NVIM_REQUIRED_ENV[@]}" -- \
-    flatpak run \
-      "${_NVIM_FLATPAK_COMMON_ARGS[@]}" \
-      --nofilesystem=host \
-      --filesystem="${PWD}" \
-      --command="sh" \
-      io.neovim.nvim -c ". /usr/lib/sdk/node26/enable.sh && npx --yes opencode-ai $*"
+    _nvim_flatpak_run_cmd "npx --yes opencode-ai ${*}"
 }

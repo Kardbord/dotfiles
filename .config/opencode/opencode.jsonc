@@ -7,8 +7,10 @@
     "github": {
       "type": "local",
       "command": [
-        "sh", "-c",
-        ". /usr/lib/sdk/golang/enable.sh && go run github.com/github/github-mcp-server/cmd/github-mcp-server@latest stdio --read-only --toolsets actions,git,context,repos,issues,pull_requests"
+        "go", "run",
+        "github.com/github/github-mcp-server/cmd/github-mcp-server@latest",
+        "stdio", "--read-only", "--toolsets",
+        "actions,git,context,repos,issues,pull_requests"
       ],
       "enabled": true,
       "environment": {

@@ -8,29 +8,34 @@
     "filesystem": {
       "type": "local",
       "command": [
-        "npx", "--yes", "@modelcontextprotocol/server-filesystem", "./",
+        "npx",
+        "--yes",
+        "@modelcontextprotocol/server-filesystem",
+        "./",
       ],
       "enabled": true,
     },
-
     // Git commands
     "git": {
       "type": "local",
       "command": [
-        "uvx", "--with", "mcp<2", "mcp-server-git"
+        "uvx",
+        "--with",
+        "mcp<2",
+        "mcp-server-git"
       ],
       "enabled": true,
     },
-
     // Bruno collections management (Postman Replacement)
     "bruno": {
       "type": "local",
       "command": [
-        "npx", "--yes", "@ostico/bruno-mcp",
+        "npx",
+        "--yes",
+        "@ostico/bruno-mcp",
       ],
       "enabled": true,
     },
-
     // Composio is an MCP gateway which manages oauth
     // to other MCP servers via web portal. It is my
     // primary provider for remote MCP. Piece-meal
@@ -45,7 +50,6 @@
       },
       "enabled": true,
     },
-
     // Web search and fetch.
     // Exa has a keyless free tier.
     "exa": {
@@ -53,7 +57,6 @@
       "url": "https://mcp.exa.ai/mcp",
       "enabled": false
     },
-
     // Documentation references.
     // Has a keyless free tier.
     "context7": {
@@ -61,14 +64,16 @@
       "url": "https://mcp.context7.com/mcp",
       "enabled": false
     },
-
     // GitHub integration
     "github": {
       "type": "local",
       "command": [
-        "go", "run",
+        "go",
+        "run",
         "github.com/github/github-mcp-server/cmd/github-mcp-server@latest",
-        "stdio", "--read-only", "--toolsets",
+        "stdio",
+        "--read-only",
+        "--toolsets",
         "actions,git,context,repos,issues,pull_requests"
       ],
       "enabled": false,
@@ -91,7 +96,6 @@
         "openrouter/fusion-flash:free",
         "openrouter/fusion:free",
         "openrouter/pareto-code",
-
         // Latest and greatest
         "~anthropic/claude-fable-latest",
         "~anthropic/claude-haiku-latest",
@@ -100,7 +104,6 @@
         "~google/gemini-flash-latest",
         "~google/gemini-pro-latest",
         "~moonshotai/kimi-latest",
-
         // Explicit models
         "cohere/north-mini-code:free",
         "~deepseek/deepseek-v4-flash-latest",
@@ -205,38 +208,35 @@
   "permission": {
     // Default to asking
     "*": "ask",
-
     // filesystem MCP
     // NOTE: this MCP server is scoped to the CWD
     "filesystem_*": "allow",
-
     // Composio MCP
     "composio_*": "allow",
-
     // Github MCP
     // NOTE: this is acceptable only because we are running the github mcp server in read-only mode
     "github_*": "allow",
-
     // Exa MCP
     "exa_*": "allow",
-
     // Context7 MCP
     "context7_*": "allow",
-
+    // Bruno MCP
+    "bruno_set_environment_variable": "ask",
+    "bruno_run_collection": "ask",
+    "bruno_*": "allow",
     // Git MCP
     "git_status": "allow",
     "git_diff*": "allow",
     "git_log": "allow",
     "git_show": "allow",
     "git_branch": "allow",
-
     // OpenCode built-ins
     "read": {
       "*": "allow",
       "*.env": "deny",
       "*.env.*": "deny",
+      "*.env.example": "allow",
       "*.env*": "deny",
-      "*.env.example": "allow"
     },
     "edit": "allow",
     "glob": "allow",

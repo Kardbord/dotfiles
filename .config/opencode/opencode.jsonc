@@ -225,11 +225,11 @@
     "bruno_run_collection": "ask",
     "bruno_*": "allow",
     // Git MCP
-    "git_status": "allow",
-    "git_diff*": "allow",
-    "git_log": "allow",
-    "git_show": "allow",
-    "git_branch": "allow",
+    "git_git_status": "allow",
+    "git_git_diff*": "allow",
+    "git_git_log": "allow",
+    "git_git_show": "allow",
+    "git_git_branch": "allow",
     // OpenCode built-ins
     "read": {
       "*": "allow",

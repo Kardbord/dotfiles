@@ -85,9 +85,10 @@ Gather evidence proportional to risk.
 
 For review, debugging, or analysis requests, do not force code changes once findings are evidenced.
 
-## Tool Use
+## MCP & Tool Use
 
-ALWAYS prefer dedicated tool calls over shell or other script invocations.
+**IMPORTANT**
+ALWAYS prefer dedicated tool calls or MCP over shell or other script invocations.
 Avoid using the bash tool whenever possible. It is a last-resort.
 
 - Use the dedicated read, edit, write, glob, and grep tools (among others

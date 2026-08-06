@@ -13,6 +13,15 @@
       "enabled": true,
     },
 
+    // Git commands
+    "git": {
+      "type": "local",
+      "command": [
+        "uvx", "--with", "mcp<2", "mcp-server-git"
+      ],
+      "enabled": true,
+    },
+
     // Composio is an MCP gateway which manages oauth
     // to other MCP servers via web portal. It is my
     // primary provider for remote MCP. Piece-meal
@@ -204,6 +213,13 @@
 
     // Context7 MCP
     "context7_*": "allow",
+
+    // Git MCP
+    "git_status": "allow",
+    "git_diff*": "allow",
+    "git_log": "allow",
+    "git_show": "allow",
+    "git_branch": "allow",
 
     // OpenCode built-ins
     "read": {

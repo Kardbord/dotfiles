@@ -20,7 +20,7 @@
 
 _NVIM_FLATPAK_XDG_DATA_HOME="${HOME}/.var/app/io.neovim.nvim/data"
 _NVIM_FLATPAK_DFLT_PATH='/app/bin:/usr/bin'
-_NVIM_FLATPAK_PATH="${_NVIM_FLATPAK_DFLT_PATH}:${_NVIM_FLATPAK_XDG_DATA_HOME}/tree-sitter/bin"
+_NVIM_FLATPAK_PATH="${_NVIM_FLATPAK_DFLT_PATH}:${_NVIM_FLATPAK_XDG_DATA_HOME}/tree-sitter/bin:${_NVIM_FLATPAK_XDG_DATA_HOME}/uv/bin"
 _NVIM_REQUIRED_FLATPAKS=(
   "io.neovim.nvim"
 )
@@ -69,6 +69,11 @@ _nvim_flatpak_ensure_deps() {
   if ! _nvim_flatpak_run_cmd 'command -v tree-sitter' &>/dev/null; then
     echo "[sandbox] bootstrapping nvim sandbox with tree-sitter-cli..."
     _nvim_flatpak_run_cmd "npm install -g --prefix='${_NVIM_FLATPAK_XDG_DATA_HOME}/tree-sitter' tree-sitter-cli"
+  fi
+
+  if ! _nvim_flatpak_run_cmd 'command -v uvx' &>/dev/null; then
+    echo "[sandbox] bootstrapping nvim sandbox with uvx..."
+    _nvim_flatpak_run_cmd "pip install --prefix='${_NVIM_FLATPAK_XDG_DATA_HOME}/uv' uv"
   fi
 
   if ! _secrets_are_set "${_NVIM_REQUIRED_ENV[@]}"; then

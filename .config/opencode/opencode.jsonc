@@ -22,6 +22,15 @@
       "enabled": true,
     },
 
+    // Bruno collections management (Postman Replacement)
+    "bruno": {
+      "type": "local",
+      "command": [
+        "npx", "--yes", "@ostico/bruno-mcp",
+      ],
+      "enabled": true,
+    },
+
     // Composio is an MCP gateway which manages oauth
     // to other MCP servers via web portal. It is my
     // primary provider for remote MCP. Piece-meal

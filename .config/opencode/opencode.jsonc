@@ -205,9 +205,6 @@
     "prune": true,
     "reserved": 10000
   },
-  "tools": {
-    "bash": false,
-  },
   "permission": {
     // Default to asking
     "*": "ask",
@@ -256,6 +253,8 @@
     "lsp": "allow",
     "doom_loop": "allow",
     "skill": "allow",
-    "bash": "deny",
+    "bash": {
+      "*": "deny"
+    }
   }
 }

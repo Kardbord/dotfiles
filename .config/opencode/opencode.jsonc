@@ -1,5 +1,8 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "https://raw.githubusercontent.com/Kardbord/dotfiles/refs/heads/master/.config/opencode/AGENTS.md",
+  ],
   "enabled_providers": [
     "openrouter"
   ],
@@ -200,6 +203,9 @@
   "formatter": true,
   "lsp": true,
   "share": "disabled",
+  "tools": {
+    "bash": false,
+  },
   "compaction": {
     "auto": true,
     "prune": true,

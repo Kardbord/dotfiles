@@ -203,13 +203,13 @@
   "formatter": true,
   "lsp": true,
   "share": "disabled",
-  "tools": {
-    "bash": false,
-  },
   "compaction": {
     "auto": true,
     "prune": true,
     "reserved": 10000
+  },
+  "tools": {
+    "bash": false,
   },
   "permission": {
     // Default to asking
@@ -259,39 +259,6 @@
     "lsp": "allow",
     "doom_loop": "allow",
     "skill": "allow",
-    "bash": {
-      "*": "ask",
-      "alias *": "deny",
-      "apt *": "deny",
-      "apt-get *": "deny",
-      "aria2c *": "deny",
-      "axel *": "deny",
-      "bash *": "deny",
-      "chrome *": "deny",
-      "command *": "deny",
-      "curl *": "deny",
-      "curlie *": "deny",
-      "dnf *": "deny",
-      "env *": "deny",
-      "eval *": "deny",
-      "exec *": "deny",
-      "firefox *": "deny",
-      "http-prompt *": "deny",
-      "httpie *": "deny",
-      "links *": "deny",
-      "lynx *": "deny",
-      "nc *": "deny",
-      "pip *": "deny",
-      "safari *": "deny",
-      "sh *": "deny",
-      "ssh *": "deny",
-      "sudo *": "deny",
-      "telnet *": "deny",
-      "w3m *": "deny",
-      "wget *": "deny",
-      "xh *": "deny",
-      "yum *": "deny",
-      "zypper *": "deny"
-    },
+    "bash": "deny",
   }
 }

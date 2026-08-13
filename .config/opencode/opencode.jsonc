@@ -37,7 +37,7 @@
         "--yes",
         "@ostico/bruno-mcp",
       ],
-      "enabled": true,
+      "enabled": false,
     },
     // Composio is an MCP gateway which manages oauth
     // to other MCP servers via web portal. I had limited

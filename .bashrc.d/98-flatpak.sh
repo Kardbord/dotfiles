@@ -36,7 +36,7 @@ _ensure_flatpak() {
   fi
 
   for remote in "${!_REQUIRED_FLATPAK_REMOTES[@]}"; do
-    if ! flatpak remotes --columns=url | grep "${remote}"; then
+    if ! flatpak remotes --columns=url | grep -q "${remote}"; then
       echo "[sandbox] flatpak is missing a required remote: ${remote}" >&2
       echo "[sandbox] Install with:" >&2
       echo "  flatpak remote-add --user --if-not-exists <name> ${_REQUIRED_FLATPAK_REMOTES[${remote}]}"

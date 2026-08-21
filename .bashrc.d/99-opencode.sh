@@ -31,11 +31,6 @@ _OPENCODE_REQUIRED_ENV=(
   "COMPOSIO_API_KEY=personal/composio/api-key"
 )
 
-_OPENCODE_FLATPAK_COMMON_ARGS=(
-  "--env=FLATPAK_ENABLE_SDK_EXT=${_FLATPAK_ENABLE_SDK_EXT}"
-  "--filesystem=xdg-config/opencode"
-)
-
 _opencode_flatpak_run_cmd() {
   local sdk_ext setup='' exts
   IFS=',' read -ra exts <<<"${_FLATPAK_ENABLE_SDK_EXT}"
@@ -44,7 +39,6 @@ _opencode_flatpak_run_cmd() {
   done
   setup+="activate-kardbord-env "
   flatpak run \
-    "${_OPENCODE_FLATPAK_COMMON_ARGS[@]}" \
     --nofilesystem=host \
     --filesystem="${PWD}" \
     --command=sh \
@@ -73,7 +67,6 @@ opencode_nosandbox() {
   _opencode_flatpak_ensure_deps || return 1
   _run_with_secrets "${_OPENCODE_REQUIRED_ENV[@]}" -- \
     flatpak run \
-    "${_OPENCODE_FLATPAK_COMMON_ARGS[@]}" \
     --filesystem=host \
     io.github.kardbord.opencode "$@"
 }
@@ -82,7 +75,6 @@ opencode() {
   _opencode_flatpak_ensure_deps || return 1
   _run_with_secrets "${_OPENCODE_REQUIRED_ENV[@]}" -- \
     flatpak run \
-    "${_OPENCODE_FLATPAK_COMMON_ARGS[@]}" \
     --filesystem="${PWD}" \
     io.github.kardbord.opencode "$@"
 }

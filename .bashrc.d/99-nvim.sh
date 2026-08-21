@@ -36,7 +36,6 @@ _NVIM_REQUIRED_FLATPAKS=(
 
 _NVIM_FLATPAK_COMMON_ARGS=(
   "--env=FLATPAK_ENABLE_SDK_EXT=${_FLATPAK_ENABLE_SDK_EXT}"
-  "--filesystem=xdg-config/nvim"
   "--filesystem=xdg-config/opencode"
 )
 

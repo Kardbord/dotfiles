@@ -23,8 +23,8 @@
       "type": "local",
       "command": [
         "uvx",
-        "--with",
-        "mcp<2",
+        //"--with",
+        //"mcp<2",
         "mcp-server-git"
       ],
       "enabled": true,

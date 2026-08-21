@@ -107,13 +107,14 @@
         // Explicit models
         "cohere/north-mini-code:free",
         "~deepseek/deepseek-v4-flash-latest",
-        "deepseek/deepseek-v4-pro",
+        "deepseek/deepseek-v4-pro", // Pro 0423
+        "deepseek/deepseek-v4-flash", // Flash 0423
         "google/gemini-3.5-flash-lite",
         "google/gemma-4-26b-a4b-it",
         "google/gemma-4-31b-it",
         "ibm-granite/granite-4.1-8b",
         "inception/mercury-2",
-        "inclusionai/ling-3.0-flash:free",
+        "inclusionai/ling-3.0-flash",
         "inclusionai/ring-2.6-1t",
         "kwaipilot/kat-coder-air-v2.5",
         "minimax/minimax-m3",
@@ -174,7 +175,7 @@
                   "cohere/north-mini-code:free",
                   "~deepseek/deepseek-v4-flash-latest",
                   "google/gemma-4-26b-a4b-it:free",
-                  "inclusionai/ling-3.0-flash:free",
+                  "inclusionai/ling-3.0-flash",
                   "nvidia/nemotron-3-ultra-550b-a55b:free",
                   "poolside/laguna-s-2.1",
                   "tencent/hy3-preview",
@@ -192,7 +193,7 @@
       }
     }
   },
-  "model": "openrouter/xiaomi/mimo-v2.5-pro",
+  "model": "openrouter/inclusionai/ling-3.0-flash",
   "small_model": "openrouter/openrouter/free",
   "logLevel": "WARN",
   "autoupdate": true,

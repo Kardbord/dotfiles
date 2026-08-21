@@ -14,7 +14,7 @@ _REQUIRED_FLATPAK_SDK_EXTS=(
   "org.freedesktop.Sdk.Extension.mingw-w64"
   "org.freedesktop.Sdk.Extension.node26"
   "org.freedesktop.Sdk.Extension.openjdk"
-  "org.freedesktop.Sdk.Extension.rust-stable"
+  "org.freedesktop.Sdk.Extension.rust-nightly"
   "org.freedesktop.Sdk.Extension.typescript"
   "org.freedesktop.Sdk.Extension.bazel"
 )

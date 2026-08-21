@@ -5,19 +5,6 @@ declare -A _REQUIRED_FLATPAK_REMOTES=(
 
 _REQUIRED_FLATPAKS=(
   "org.freedesktop.Sdk"
-  "io.github.kardbord.Sdk"
-  "io.github.kardbord.Platform"
-  "io.github.kardbord.fd"
-  "io.github.kardbord.fzf"
-  "io.github.kardbord.neovim"
-  "io.github.kardbord.opencode"
-  "io.github.kardbord.ripgrep"
-  "io.github.kardbord.sk"
-  "io.github.kardbord.tool.lua"
-  "io.github.kardbord.tool.ruby4"
-  "io.github.kardbord.tool.uv"
-  "io.github.kardbord.treesitter-cli"
-  "io.github.kardbord.viu"
 )
 
 _REQUIRED_FLATPAK_SDK_EXTS=(

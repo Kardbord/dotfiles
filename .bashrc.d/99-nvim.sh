@@ -18,15 +18,23 @@
 # running in a flatpak sandbox.                          #
 # ------------------------------------------------------ #
 
-_NVIM_FLATPAK_XDG_DATA_HOME="${HOME}/.var/app/io.neovim.nvim/data"
-_NVIM_FLATPAK_DFLT_PATH='/app/bin:/usr/bin'
-_NVIM_FLATPAK_PATH="${_NVIM_FLATPAK_DFLT_PATH}:${_NVIM_FLATPAK_XDG_DATA_HOME}/tree-sitter/bin:${_NVIM_FLATPAK_XDG_DATA_HOME}/uv/bin"
 _NVIM_REQUIRED_FLATPAKS=(
-  "io.neovim.nvim"
+  "io.github.kardbord.Sdk"
+  "io.github.kardbord.Platform"
+  "io.github.kardbord.fd"
+  "io.github.kardbord.fzf"
+  "io.github.kardbord.neovim"
+  "io.github.kardbord.opencode"
+  "io.github.kardbord.ripgrep"
+  "io.github.kardbord.sk"
+  "io.github.kardbord.tool.lua"
+  "io.github.kardbord.tool.ruby4"
+  "io.github.kardbord.tool.uv"
+  "io.github.kardbord.treesitter-cli"
+  "io.github.kardbord.viu"
 )
 
 _NVIM_FLATPAK_COMMON_ARGS=(
-  "--env=PATH=${_NVIM_FLATPAK_PATH}"
   "--env=FLATPAK_ENABLE_SDK_EXT=${_FLATPAK_ENABLE_SDK_EXT}"
   "--filesystem=xdg-config/nvim"
   "--filesystem=xdg-config/opencode"
@@ -43,16 +51,17 @@ _NVIM_REQUIRED_ENV=(
 
 _nvim_flatpak_run_cmd() {
   local sdk_ext setup='' exts
-  IFS=',' read -ra exts <<< "${_FLATPAK_ENABLE_SDK_EXT}"
+  IFS=',' read -ra exts <<<"${_FLATPAK_ENABLE_SDK_EXT}"
   for sdk_ext in "${exts[@]}"; do
     setup+="[[ -f /usr/lib/sdk/${sdk_ext}/enable.sh ]] && . /usr/lib/sdk/${sdk_ext}/enable.sh; "
   done
+  setup+="activate-kardbord-env "
   flatpak run \
     "${_NVIM_FLATPAK_COMMON_ARGS[@]}" \
     --nofilesystem=host \
     --filesystem="${PWD}" \
     --command=sh \
-    io.neovim.nvim \
+    io.github.kardbord.neovim \
     -c "${setup}${*}"
 }
 
@@ -65,16 +74,6 @@ _nvim_flatpak_ensure_deps() {
       return 1
     fi
   done
-
-  if ! _nvim_flatpak_run_cmd 'command -v tree-sitter' &>/dev/null; then
-    echo "[sandbox] bootstrapping nvim sandbox with tree-sitter-cli..."
-    _nvim_flatpak_run_cmd "npm install -g --prefix='${_NVIM_FLATPAK_XDG_DATA_HOME}/tree-sitter' tree-sitter-cli"
-  fi
-
-  if ! _nvim_flatpak_run_cmd 'command -v uvx' &>/dev/null; then
-    echo "[sandbox] bootstrapping nvim sandbox with uvx..."
-    _nvim_flatpak_run_cmd "pip install --prefix='${_NVIM_FLATPAK_XDG_DATA_HOME}/uv' uv"
-  fi
 
   if ! _secrets_are_set "${_NVIM_REQUIRED_ENV[@]}"; then
     echo "[nvim] Warning! Neovim plugin functionality may be limited without all of these secrets: ${_NVIM_REQUIRED_ENV[*]}" >&2
@@ -89,8 +88,9 @@ nvim_nosandbox() {
   _nvim_flatpak_ensure_deps || return 1
   _run_with_secrets "${_NVIM_REQUIRED_ENV[@]}" -- \
     flatpak run \
-      "${_NVIM_FLATPAK_COMMON_ARGS[@]}" \
-      io.neovim.nvim "$@"
+    "${_NVIM_FLATPAK_COMMON_ARGS[@]}" \
+    --filesystem=host \
+    io.github.kardbord.neovim "$@"
 }
 
 alias vim='nvim'
@@ -99,10 +99,10 @@ nvim() {
   _nvim_flatpak_ensure_deps || return 1
   _run_with_secrets "${_NVIM_REQUIRED_ENV[@]}" -- \
     flatpak run \
-      "${_NVIM_FLATPAK_COMMON_ARGS[@]}" \
-      --nofilesystem=host \
-      --filesystem="${PWD}" \
-      io.neovim.nvim "$@"
+    "${_NVIM_FLATPAK_COMMON_ARGS[@]}" \
+    --nofilesystem=host \
+    --filesystem="${PWD}" \
+    io.github.kardbord.neovim "$@"
 }
 
 # ------------------------------------------------------ #
@@ -131,5 +131,5 @@ opencode() {
   # opencode out of the nvim flatpak since it has to run
   # opencode anyway for the CodeCompanion plugin.
   _run_with_secrets "${_NVIM_REQUIRED_ENV[@]}" -- \
-    _nvim_flatpak_run_cmd "npx --yes opencode-ai ${*}"
+    _nvim_flatpak_run_cmd "opencode ${*}"
 }

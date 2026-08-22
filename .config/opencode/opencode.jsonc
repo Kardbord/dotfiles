@@ -262,6 +262,9 @@
   "agent": {
     "plan": {
       "permission": {
+        "edit": "deny",
+        "write": "deny",
+        "apply_patch": "deny",
         "filesystem_write_file": "deny",
         "filesystem_edit_file": "deny",
         "filesystem_create_directory": "deny",

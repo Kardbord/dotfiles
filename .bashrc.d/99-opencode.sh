@@ -68,6 +68,10 @@ opencode_nosandbox() {
   _run_with_secrets "${_OPENCODE_REQUIRED_ENV[@]}" -- \
     flatpak run \
     --filesystem=host \
+    --env=GIT_AUTHOR_NAME="Tanner Kvarfordt" \
+    --env=GIT_COMMITTER_NAME="Tanner Kvarfordt" \
+    --env=GIT_AUTHOR_EMAIL="tanner.kvarfordt@proton.me" \
+    --env=GIT_COMMITTER_EMAIL="tanner.kvarfordt@proton.me" \
     io.github.kardbord.opencode "$@"
 }
 
@@ -76,5 +80,9 @@ opencode() {
   _run_with_secrets "${_OPENCODE_REQUIRED_ENV[@]}" -- \
     flatpak run \
     --filesystem="${PWD}" \
+    --env=GIT_AUTHOR_NAME="Tanner Kvarfordt" \
+    --env=GIT_COMMITTER_NAME="Tanner Kvarfordt" \
+    --env=GIT_AUTHOR_EMAIL="tanner.kvarfordt@proton.me" \
+    --env=GIT_COMMITTER_EMAIL="tanner.kvarfordt@proton.me" \
     io.github.kardbord.opencode "$@"
 }

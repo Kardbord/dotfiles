@@ -245,7 +245,7 @@
     "grep": "allow",
     "list": "allow",
     "task": "allow",
-    "external_directory": "ask",
+    "external_directory": "deny",
     "todowrite": "allow",
     "question": "allow",
     "webfetch": "allow",
@@ -257,6 +257,38 @@
     "skill": "allow",
     "bash": {
       "*": "deny"
+    }
+  },
+  "agent": {
+    "plan": {
+      "permission": {
+        "filesystem_write_file": "deny",
+        "filesystem_edit_file": "deny",
+        "filesystem_create_directory": "deny",
+        "filesystem_move_file": "deny",
+        "bruno_create_collection": "deny",
+        "bruno_write_request": "deny",
+        "bruno_move_request": "deny",
+        "bruno_delete_request": "deny",
+        "bruno_add_test_script": "deny",
+        "bruno_remove_script": "deny",
+        "bruno_create_environment": "deny",
+        "bruno_update_environment": "deny",
+        "bruno_set_environment_variable": "deny",
+        "bruno_remove_environment_variable": "deny",
+        "bruno_run_collection": "deny",
+        "git_git_commit": "deny",
+        "git_git_add": "deny",
+        "git_git_reset": "deny",
+        "git_git_create_branch": "deny",
+        "git_git_checkout": "deny",
+        "repo_clone": "deny",
+        "skill": "ask",
+        "go_format": "deny",
+        "go_tidy": "deny",
+        "go_build": "deny",
+        "go_run": "deny"
+      }
     }
   }
 }

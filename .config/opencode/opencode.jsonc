@@ -200,7 +200,7 @@
       }
     }
   },
-  "model": "openrouter/inclusionai/ling-3.0-flash",
+  "model": "openrouter/~deepseek/deepseek-v4-flash-latest",
   "small_model": "openrouter/openrouter/free",
   "logLevel": "WARN",
   "autoupdate": true,

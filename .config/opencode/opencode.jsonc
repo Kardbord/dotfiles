@@ -238,6 +238,11 @@
     "git_git_log": "allow",
     "git_git_show": "allow",
     "git_git_branch": "allow",
+    // Custom go tools
+    "go_build": "ask",
+    "go_run": "ask",
+    "go_test*": "ask",
+    "go_bench*": "ask",
     // OpenCode built-ins
     "read": {
       "*": "allow",

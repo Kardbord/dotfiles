@@ -180,7 +180,6 @@
                 "analysis_models": [
                   // 8 models max
                   "cohere/north-mini-code:free",
-                  "~deepseek/deepseek-v4-flash-latest",
                   "google/gemma-4-26b-a4b-it:free",
                   "inclusionai/ling-3.0-flash",
                   "nvidia/nemotron-3-ultra-550b-a55b:free",
@@ -188,7 +187,7 @@
                   "tencent/hy3-preview",
                   "xiaomi/mimo-v2.5",
                 ],
-                "model": "~deepseek/deepseek-v4-flash-latest",
+                "model": "xiaomi/mimo-v2.5",
                 "max_tool_calls": 8 // 16 tool calls max
               }
             ]
@@ -200,7 +199,7 @@
       }
     }
   },
-  "model": "openrouter/~deepseek/deepseek-v4-flash-latest",
+  "model": "openrouter/xiaomi/mimo-v2.5",
   "small_model": "openrouter/openrouter/free",
   "logLevel": "WARN",
   "autoupdate": true,

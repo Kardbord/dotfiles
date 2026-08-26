@@ -243,6 +243,8 @@
     "go_run": "ask",
     "go_test*": "ask",
     "go_bench*": "ask",
+    // Custom actionlint tool
+    "actionlint": "allow",
     // OpenCode built-ins
     "read": {
       "*": "allow",

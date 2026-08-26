@@ -17,9 +17,8 @@
 # ------------------------------------------------------ #
 
 _OPENCODE_REQUIRED_FLATPAKS=(
-  "io.github.kardbord.Sdk"
-  "io.github.kardbord.Platform"
-  "io.github.kardbord.opencode"
+  "io.github.kardbord.dev"
+  "io.github.kardbord.tool.opencode"
 )
 
 _OPENCODE_REQUIRED_ENV=(
@@ -30,21 +29,6 @@ _OPENCODE_REQUIRED_ENV=(
   "GITHUB_PERSONAL_ACCESS_TOKEN=personal/github/ro-pat"
   "COMPOSIO_API_KEY=personal/composio/api-key"
 )
-
-_opencode_flatpak_run_cmd() {
-  local sdk_ext setup='' exts
-  IFS=',' read -ra exts <<<"${_FLATPAK_ENABLE_SDK_EXT}"
-  for sdk_ext in "${exts[@]}"; do
-    setup+="[[ -f /usr/lib/sdk/${sdk_ext}/enable.sh ]] && . /usr/lib/sdk/${sdk_ext}/enable.sh; "
-  done
-  setup+="activate-kardbord-env "
-  flatpak run \
-    --nofilesystem=host \
-    --filesystem="${PWD}" \
-    --command=sh \
-    io.github.kardbord.opencode \
-    -c "${setup}${*}"
-}
 
 _opencode_flatpak_ensure_deps() {
   _ensure_flatpak || return 1
@@ -67,22 +51,28 @@ opencode_nosandbox() {
   _opencode_flatpak_ensure_deps || return 1
   _run_with_secrets "${_OPENCODE_REQUIRED_ENV[@]}" -- \
     flatpak run \
+    "${_KB_DEV_TOOLS_COMMON_ARGS[@]}" \
     --filesystem=host \
+    --filesystem=xdg-config/opencode \
+    --share=network \
     --env=GIT_AUTHOR_NAME="Tanner Kvarfordt" \
     --env=GIT_COMMITTER_NAME="Tanner Kvarfordt" \
     --env=GIT_AUTHOR_EMAIL="tanner.kvarfordt@proton.me" \
     --env=GIT_COMMITTER_EMAIL="tanner.kvarfordt@proton.me" \
-    io.github.kardbord.opencode "$@"
+    io.github.kardbord.dev opencode "$@"
 }
 
 opencode() {
   _opencode_flatpak_ensure_deps || return 1
   _run_with_secrets "${_OPENCODE_REQUIRED_ENV[@]}" -- \
     flatpak run \
+    "${_KB_DEV_TOOLS_COMMON_ARGS[@]}" \
     --filesystem="${PWD}" \
+    --filesystem=xdg-config/opencode \
+    --share=network \
     --env=GIT_AUTHOR_NAME="Tanner Kvarfordt" \
     --env=GIT_COMMITTER_NAME="Tanner Kvarfordt" \
     --env=GIT_AUTHOR_EMAIL="tanner.kvarfordt@proton.me" \
     --env=GIT_COMMITTER_EMAIL="tanner.kvarfordt@proton.me" \
-    io.github.kardbord.opencode "$@"
+    io.github.kardbord.dev opencode "$@"
 }

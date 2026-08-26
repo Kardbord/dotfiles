@@ -1,13 +1,12 @@
 declare -A _REQUIRED_FLATPAK_REMOTES=(
   [https://dl.flathub.org/repo]=https://dl.flathub.org/repo/flathub.flatpakrepo
-  [oci+https://kardbord.github.io/Boxes]=https://kardbord.github.io/Boxes/kardbord-boxes.flatpakrepo
+  [oci+https://Kardbord.github.io/Boxes]=https://kardbord.github.io/Boxes/kardbord-boxes.flatpakrepo
 )
 
 _REQUIRED_FLATPAKS=(
+  "io.github.kardbord.dev"
   "org.freedesktop.Sdk"
-)
-
-_REQUIRED_FLATPAK_SDK_EXTS=(
+  "org.freedesktop.Sdk.Extension.bazel"
   "org.freedesktop.Sdk.Extension.dotnet10"
   "org.freedesktop.Sdk.Extension.golang"
   "org.freedesktop.Sdk.Extension.llvm22"
@@ -16,14 +15,7 @@ _REQUIRED_FLATPAK_SDK_EXTS=(
   "org.freedesktop.Sdk.Extension.openjdk"
   "org.freedesktop.Sdk.Extension.rust-nightly"
   "org.freedesktop.Sdk.Extension.typescript"
-  "org.freedesktop.Sdk.Extension.bazel"
 )
-
-# Useful for flatpaks that use the FLATPAK_ENABLE_SDK_EXT environment variable, such as neovim.
-_FLATPAK_ENABLE_SDK_EXT="$(
-  IFS=,
-  echo "${_REQUIRED_FLATPAK_SDK_EXTS[*]/org.freedesktop.Sdk.Extension./}"
-)"
 
 _ensure_flatpak() {
   if ! command -v flatpak &>/dev/null; then
@@ -46,11 +38,32 @@ _ensure_flatpak() {
       return 1
     fi
   done
+}
 
-  for dep in "${_REQUIRED_FLATPAK_SDK_EXTS[@]}"; do
-    if ! flatpak info "${dep}" &>/dev/null; then
-      echo "[sandbox] ${dep} is not installed via flatpak." >&2
-      return 1
-    fi
-  done
+_KB_DEV_TOOLS_COMMON_ARGS=(
+  --filesystem=/tmp
+  --filesystem=/var/tmp
+  --socket=wayland
+  --socket=fallback-x11
+  --share=ipc
+)
+
+# Generic runner for any tools in the io.github.kardbord.dev flatpak.
+kb-dev-tools() {
+  flatpak run \
+    "${_KB_DEV_TOOLS_COMMON_ARGS[@]}" \
+    --filesystem="${PWD}" \
+    io.github.kardbord.dev \
+    "$@"
+}
+
+# Generic runner for any tools in the io.github.kardbord.dev flatpak.
+# Includes network access
+kb-dev-tools-networked() {
+  flatpak run \
+    "${_KB_DEV_TOOLS_COMMON_ARGS[@]}" \
+    --filesystem="${PWD}" \
+    --share=network
+    io.github.kardbord.dev \
+    "$@"
 }

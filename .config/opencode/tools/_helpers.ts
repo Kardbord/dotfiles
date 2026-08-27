@@ -97,6 +97,19 @@ export function resolveDir(input: string | undefined, base: string): string {
   return resolved
 }
 
+export function resolveFiles(files: string[], base: string): string[] {
+  const root = path.resolve(base)
+  return files.map((file) => {
+    const resolved = path.resolve(root, file)
+    if (!isWithinWorkingTree(root, resolved)) {
+      throw new Error(
+        `File \`${file}\` resolves outside the working tree \`${base}\`. Only files within the working tree are allowed.`,
+      )
+    }
+    return resolved
+  })
+}
+
 export function present(result: RunResult, cmdLine: string, cwd: string): string {
   const out = [result.stdout.trim(), result.stderr.trim()].filter(Boolean).join("\n\n")
   if (result.code === 0) {

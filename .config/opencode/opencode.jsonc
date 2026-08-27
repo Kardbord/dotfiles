@@ -252,6 +252,9 @@
     "ctest": "ask",
     "cpack": "ask",
     "ninja": "ask",
+    // Custom data processing tools
+    "jq": "allow",
+    "yq": "allow",
     // OpenCode built-ins
     "read": {
       "*": "allow",

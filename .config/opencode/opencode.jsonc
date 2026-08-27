@@ -246,6 +246,12 @@
     "actionlint": "allow",
     // Custom fd tool
     "fd": "allow",
+    // Custom build tools (ask to gate code execution)
+    "make": "ask",
+    "cmake": "ask",
+    "ctest": "ask",
+    "cpack": "ask",
+    "ninja": "ask",
     // OpenCode built-ins
     "read": {
       "*": "allow",

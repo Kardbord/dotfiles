@@ -236,3 +236,32 @@ export const bench = tool({
     return present(res, `go test ${targets.join(" ")} -run=^$ -bench=. -benchmem`, cwd)
   },
 })
+
+const targetArg = tool.schema
+  .string()
+  .describe("The Go package to fuzz, e.g. `./foo/bar`. This should generally be a relative path.")
+
+const testNameArg = tool.schema
+  .string()
+  .describe("The name of the fuzz test function, e.g. `FuzzFoo`.")
+
+const fuzzTimeArg = tool.schema
+  .string()
+  .optional()
+  .describe("Fuzz time duration, e.g. `10s`. Defaults to `10s`.")
+
+export const fuzz = tool({
+  description: "Run a Go fuzz test targeting the specified test function within a package using `go test -fuzz`.",
+  args: { target: targetArg, test: testNameArg, fuzztime: fuzzTimeArg },
+  async execute(args, context) {
+    if (!Bun.which("go")) {
+      return binaryMissing("go")
+    }
+    const target = args.target
+    const testName = args.test
+    const fuzztime = args.fuzztime ?? "10s"
+    const cmd = ["go", "test", "-fuzz", testName, "-fuzztime", fuzztime, target]
+    const res = await exec(cmd, context.directory)
+    return present(res, cmd.join(" "), context.directory)
+  },
+})

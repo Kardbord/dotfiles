@@ -242,6 +242,7 @@
     "go_run": "ask",
     "go_test*": "ask",
     "go_bench*": "ask",
+    "go_fuzz": "ask",
     // Custom actionlint tool
     "actionlint": "allow",
     // Custom fd tool
@@ -313,7 +314,8 @@
         "go_format": "deny",
         "go_tidy": "deny",
         "go_build": "deny",
-        "go_run": "deny"
+        "go_run": "deny",
+        "go_fuzz": "ask"
       }
     }
   }

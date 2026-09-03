@@ -20,6 +20,16 @@ export default tool({
     if (!Bun.which("make")) {
       return binaryMissing("make")
     }
+    await context.ask({
+      permission: "make",
+      patterns: ["*"],
+      always: ["*"],
+      metadata: {
+        command: "make",
+        args: args.args ?? [],
+        directory: args.directory ?? context.directory,
+      },
+    })
     const cwd = resolveDir(args.directory, context.directory)
     const cmd = ["make", ...(args.args ?? [])]
     const res = await exec(cmd, cwd)

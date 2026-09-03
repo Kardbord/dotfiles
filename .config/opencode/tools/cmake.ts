@@ -20,6 +20,16 @@ export default tool({
     if (!Bun.which("cmake")) {
       return binaryMissing("cmake")
     }
+    await context.ask({
+      permission: "cmake",
+      patterns: ["*"],
+      always: ["*"],
+      metadata: {
+        command: "cmake",
+        args: args.args ?? [],
+        directory: args.directory ?? context.directory,
+      },
+    })
     const cwd = resolveDir(args.directory, context.directory)
     const cmd = ["cmake", ...(args.args ?? [])]
     const res = await exec(cmd, cwd)

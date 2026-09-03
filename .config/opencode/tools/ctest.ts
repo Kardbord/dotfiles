@@ -20,6 +20,16 @@ export default tool({
     if (!Bun.which("ctest")) {
       return binaryMissing("ctest")
     }
+    await context.ask({
+      permission: "ctest",
+      patterns: ["*"],
+      always: ["*"],
+      metadata: {
+        command: "ctest",
+        args: args.args ?? [],
+        directory: args.directory ?? context.directory,
+      },
+    })
     const cwd = resolveDir(args.directory, context.directory)
     const cmd = ["ctest", ...(args.args ?? [])]
     const res = await exec(cmd, cwd)

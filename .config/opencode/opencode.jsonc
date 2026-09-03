@@ -237,22 +237,10 @@
     "git_git_log": "allow",
     "git_git_show": "allow",
     "git_git_branch": "allow",
-    // Custom go tools
-    "go_build": "ask",
-    "go_run": "ask",
-    "go_test*": "ask",
-    "go_bench*": "ask",
-    "go_fuzz*": "ask",
     // Custom actionlint tool
     "actionlint": "allow",
     // Custom fd tool
     "fd": "allow",
-    // Custom build tools (ask to gate code execution)
-    "make": "ask",
-    "cmake": "ask",
-    "ctest": "ask",
-    "cpack": "ask",
-    "ninja": "ask",
     // Custom data processing tools
     "jq": "allow",
     "yq": "allow",
@@ -314,8 +302,7 @@
         "go_format": "deny",
         "go_tidy": "deny",
         "go_build": "deny",
-        "go_run": "deny",
-        "go_fuzz*": "ask"
+        "go_run": "deny"
       }
     }
   }

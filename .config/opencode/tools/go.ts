@@ -114,6 +114,15 @@ export const build = tool({
     if (!Bun.which("go")) {
       return binaryMissing("go")
     }
+    await context.ask({
+      permission: "go_build",
+      patterns: ["*"],
+      always: ["*"],
+      metadata: {
+        command: "go build ./...",
+        directory: args.directory ?? context.directory,
+      },
+    })
     const cwd = resolveDir(args.directory, context.directory)
     const res = await exec(["go", "build", "./..."], cwd)
     return present(res, "go build ./...", cwd)
@@ -128,6 +137,17 @@ export const run = tool({
     if (!Bun.which("go")) {
       return binaryMissing("go")
     }
+    await context.ask({
+      permission: "go_run",
+      patterns: ["*"],
+      always: ["*"],
+      metadata: {
+        command: "go run",
+        target: args.target ?? ".",
+        args: args.args ?? [],
+        directory: args.directory ?? context.directory,
+      },
+    })
     const cwd = resolveDir(args.directory, context.directory)
     const target = resolveRunTarget(args.target ?? ".", cwd)
     const cmd = ["go", "run", target, ...(args.args ?? [])]
@@ -230,6 +250,16 @@ export const bench = tool({
     if (!Bun.which("go")) {
       return binaryMissing("go")
     }
+    await context.ask({
+      permission: "go_bench",
+      patterns: ["*"],
+      always: ["*"],
+      metadata: {
+        command: "go test -bench=. -benchmem",
+        targets: args.targets ?? ["./..."],
+        directory: args.directory ?? context.directory,
+      },
+    })
     const cwd = resolveDir(args.directory, context.directory)
     const targets = resolveTargets(args.targets ?? ["./..."], cwd)
     const res = await exec(["go", "test", ...targets, "-run=^$", "-bench=.", "-benchmem"], cwd)
@@ -257,6 +287,18 @@ export const fuzz = tool({
     if (!Bun.which("go")) {
       return binaryMissing("go")
     }
+    await context.ask({
+      permission: "go_fuzz",
+      patterns: ["*"],
+      always: ["*"],
+      metadata: {
+        command: "go test -fuzz",
+        test: args.test,
+        fuzztime: args.fuzztime ?? "10s",
+        target: args.target,
+        directory: context.directory,
+      },
+    })
     const target = args.target
     const testName = args.test
     const fuzztime = args.fuzztime ?? "10s"

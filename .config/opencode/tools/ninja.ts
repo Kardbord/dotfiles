@@ -20,6 +20,16 @@ export default tool({
     if (!Bun.which("ninja")) {
       return binaryMissing("ninja")
     }
+    await context.ask({
+      permission: "ninja",
+      patterns: ["*"],
+      always: ["*"],
+      metadata: {
+        command: "ninja",
+        args: args.args ?? [],
+        directory: args.directory ?? context.directory,
+      },
+    })
     const cwd = resolveDir(args.directory, context.directory)
     const cmd = ["ninja", ...(args.args ?? [])]
     const res = await exec(cmd, cwd)

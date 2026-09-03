@@ -20,6 +20,16 @@ export default tool({
     if (!Bun.which("cpack")) {
       return binaryMissing("cpack")
     }
+    await context.ask({
+      permission: "cpack",
+      patterns: ["*"],
+      always: ["*"],
+      metadata: {
+        command: "cpack",
+        args: args.args ?? [],
+        directory: args.directory ?? context.directory,
+      },
+    })
     const cwd = resolveDir(args.directory, context.directory)
     const cmd = ["cpack", ...(args.args ?? [])]
     const res = await exec(cmd, cwd)

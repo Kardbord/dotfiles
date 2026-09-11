@@ -8,12 +8,10 @@
 # ------------------------------------------------------ #
 # Opencode executes LLM-generated code — read, write,    #
 # run, install packages — all on the model's say-so.     #
-# One prompt injection is all it takes. I highly         #
-# recommend installing opencode via flatpak on any       #
-# system that supports it. Flatpak sandboxes the         #
-# process, containing the blast radius if the model      #
-# goes rogue. The config below works either way.         #
-# See docs/SECURITY.md#sandboxing                        #
+# One prompt injection is all it takes. By running it in #
+# flatpak, we sandbox the process, containing the blast  #
+# radius if the model goes rogue or a plugin is          #
+# compromised. See docs/SECURITY.md#sandboxing           #
 # ------------------------------------------------------ #
 
 _OPENCODE_REQUIRED_FLATPAKS=(

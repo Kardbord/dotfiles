@@ -13,8 +13,6 @@
 # See docs/SECURITY.md#secrets-management                #
 # ------------------------------------------------------ #
 
-export GOPASS_AGE_STDIN_PASSPHRASE=1
-
 _GOPASS_READY=
 
 # Check if the secrets are set.
@@ -50,8 +48,9 @@ _run_with_secrets() {
   local -a env_parts=()
   local arg key gppath secret
 
-  while (( $# )); do
-    arg="$1"; shift
+  while (($#)); do
+    arg="$1"
+    shift
     [[ "$arg" == "--" ]] && break
 
     key="${arg%%=*}"
@@ -76,7 +75,10 @@ _run_with_secrets() {
     env_parts+=("${key}=$(printf '%q' "${secret}")")
   done
 
-  (( $# )) || { echo "[_run_with_secrets] no command specified after --" >&2; return 1; }
+  (($#)) || {
+    echo "[_run_with_secrets] no command specified after --" >&2
+    return 1
+  }
 
   local -a cmd_parts=()
   for arg in "$@"; do

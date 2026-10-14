@@ -63,7 +63,7 @@ kb-dev-tools-networked() {
   flatpak run \
     "${_KB_DEV_TOOLS_COMMON_ARGS[@]}" \
     --filesystem="${PWD}" \
-    --share=network
+    --share=network \
     io.github.kardbord.dev \
     "$@"
 }

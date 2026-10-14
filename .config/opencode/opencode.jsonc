@@ -95,49 +95,47 @@
     "openrouter": {
       "whitelist": [
         // Routers
-        "openrouter/auto-beta",
+        "nvidia/switchyard",
+        "openrouter/auto",
         "openrouter/free",
         "openrouter/fusion",
         "openrouter/fusion-flash",
         "openrouter/fusion-flash:free",
         "openrouter/fusion:free",
         "openrouter/pareto-code",
+        "typesafe/jev-router",
         // Latest and greatest
         "~anthropic/claude-fable-latest",
         "~anthropic/claude-haiku-latest",
         "~anthropic/claude-opus-latest",
         "~anthropic/claude-sonnet-latest",
+        "~deepseek/deepseek-flash-latest",
+        "~deepseek/deepseek-pro-latest",
+        "~deepseek/deepseek-v4-flash-latest",
         "~google/gemini-flash-latest",
         "~google/gemini-pro-latest",
         "~moonshotai/kimi-latest",
+        "~z-ai/glm-flash-latest",
         // Explicit models
-        "cohere/north-mini-code:free",
-        "deepseek/deepseek-v4-flash", // Flash 0423
-        "deepseek/deepseek-v4-pro", // Pro 0423
         "google/gemini-3.5-flash-lite",
-        "google/gemma-4-26b-a4b-it",
         "google/gemma-4-31b-it",
-        "ibm-granite/granite-4.1-8b",
-        "inception/mercury-2",
-        "inclusionai/ling-3.0-flash",
-        "inclusionai/ring-2.6-1t",
-        "kwaipilot/kat-coder-air-v2.5",
+        "ibm-granite/granite-4.2-8b",
+        "inception/mercury-2.5",
+        "inclusionai/ling-3.1-flash",
         "minimax/minimax-m3",
         "mistralai/mistral-small-2603",
+        "moonshotai/kimi-k2.6",
         "moonshotai/kimi-k2.7-code",
-        "moonshotai/kimi-k3",
-        "nex-agi/nex-n2-pro",
-        "nvidia/nemotron-3-super-120b-a12b",
-        "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "nex-agi/nex-n2.5-pro",
+        "nvidia/nemotron-3.5-lightning",
         "poolside/laguna-s-2.1",
-        "qwen/qwen3-coder-next",
-        "qwen/qwen3.7-flash",
-        "qwen/qwen3.7-plus",
+        "qwen/qwen3.8-flash",
+        "qwen/qwen3.8-omni-flash",
+        "stepfun/step-3.5-flash",
         "tencent/hy3",
-        "upstage/solar-pro4",
-        "xiaomi/mimo-v2.5-pro",
-        "z-ai/glm-5.2",
-        "~deepseek/deepseek-v4-flash-latest",
+        "xiaomi/mimo-v2.6-pro",
+        "z-ai/glm-5.3-flash",
+        "z-ai/glm-5.3-flashx",
       ],
       "models": {
         "openrouter/auto-beta": {
@@ -147,16 +145,13 @@
                 "id": "auto-router",
                 "cost_tier": "high",
                 "allowed_models": [
-                  "deepseek/*",
-                  "google/gemma-*",
-                  "inception/mercury-2",
+                  "inclusionai/ling-*",
+                  "xiaomi/mimo*",
                   "minimax/*",
-                  "mistralai/code*",
-                  "mistralai/mistral-small*",
-                  "moonshotai/*",
-                  "qwen/*",
-                  "xiaomi/*",
-                  "z-ai/*",
+                  "google/gemma-*",
+                  "moonshotai/kimi-k2*",
+                  "qwen/qwen3*flash",
+                  "z-ai/glm-5*flash*"
                 ]
               }
             ]
@@ -179,16 +174,26 @@
                 "id": "fusion",
                 "analysis_models": [
                   // 8 models max
-                  "cohere/north-mini-code:free",
-                  "google/gemma-4-26b-a4b-it:free",
-                  "inclusionai/ling-3.0-flash",
-                  "nvidia/nemotron-3-ultra-550b-a55b:free",
-                  "poolside/laguna-s-2.1",
-                  "tencent/hy3-preview",
-                  "xiaomi/mimo-v2.5",
+                  "z-ai/glm-5.3-flash",
+                  "inclusionai/ling-3.1-flash",
+                  "qwen/qwen3.8-flash",
                 ],
-                "model": "xiaomi/mimo-v2.5",
+                "model": "xiaomi/mimo-v2.6-pro",
                 "max_tool_calls": 8 // 16 tool calls max
+              }
+            ]
+          }
+        },
+        "nvidia/switchyard": {
+          "options": {
+            "plugins": [
+              {
+                "id": "switchyard-router",
+                "models": [
+                  "inclusionai/ling-3.1-flash",
+                  "z-ai/glm-5.3-flashx",
+                  "moonshotai/kimi-k2.7-code",
+                ],
               }
             ]
           }
@@ -199,7 +204,7 @@
       }
     }
   },
-  "model": "openrouter/xiaomi/mimo-v2.5",
+  "model": "openrouter/xiaomi/mimo-v2.6-pro",
   "small_model": "openrouter/openrouter/free",
   "logLevel": "WARN",
   "autoupdate": true,

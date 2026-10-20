@@ -204,7 +204,7 @@
       }
     }
   },
-  "model": "openrouter/xiaomi/mimo-v2.6-pro",
+  "model": "openrouter/~deepseek/deepseek-flash-latest",
   "small_model": "openrouter/openrouter/free",
   "logLevel": "WARN",
   "autoupdate": true,

@@ -9,6 +9,7 @@ option default-providers false
 option attribution-generated-with false
 option notifications auto
 option provider-auto-update true
+option skill-path "${XDG_CONFIG_HOME:-$HOME/.config}/crush/skills"
 
 # UI options
 option ui diff unified

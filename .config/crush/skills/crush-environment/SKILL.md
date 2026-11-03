@@ -1,23 +1,34 @@
 ---
 name: crush-environment
 description: >
-  Use when working inside the Crush/charmcrush environment: bash is denied,
-  Crush runs inside a flatpak sandbox with restricted filesystem access and
-  gopass-injected secrets. Consult before running commands, accessing files
-  outside the working directory, or when a task seems to require shell.
+  Use when working inside the Crush/charmcrush environment: bash is
+  available but approval-gated, and Crush runs inside a flatpak sandbox with
+  restricted filesystem access and gopass-injected secrets. Consult before
+  reaching for shell, accessing files outside the working directory, or
+  when a task seems to require shell.
 user-invocable: true
 ---
 
 # Crush Environment
 
-This instance of Crush runs inside a flatpak sandbox with a deliberately
-restricted toolset. Read the quick facts first, then use the decision table.
-Load the reference files only when you need deeper detail.
+This instance of Crush runs inside a flatpak sandbox. Bash is available but
+prompts for approval on every call. Read the quick facts first, then use
+the decision table. Load the reference files only when you need deeper
+detail.
 
 ## Hard constraints
 
-- **The `bash` tool is denied.** Any attempt to invoke it fails. Do not try
-  to work around it; see `no-bash-tooling.md` for the replacement playbook.
+- **The `bash` tool is approval-gated.** It is visible and usable, but every
+  invocation requires user approval. Use it sparingly, prefer built-in
+  tools and MCP servers, and never call it mid-task; batch shell work to a
+  task boundary instead. See `bash-avoidance.md` for the prefer-non-bash
+  playbook.
+- **No workarounds.** Never emulate shell behavior through other tools: do
+  not write a program in an alternative language and execute it via allowed
+  tools, do not generate code for the user to run purely to obtain
+  execution, and do not chain MCP tools to simulate a shell pipeline. If
+  bash is the right tool, request it directly; otherwise stop and report
+  the gap.
 - **Filesystem access is limited to the current working directory plus
   `xdg-config/crush`** (`~/.config/crush`). Paths outside these mounts,
   including `$HOME/.config` for other tools, are not readable.
@@ -26,7 +37,8 @@ Load the reference files only when you need deeper detail.
 - **Secrets are injected from gopass as environment variables** by the
   launcher, not stored in any file. See `sandbox.md` for the list.
 - Allowed built-in tools: `view`, `ls`, `grep`, `glob`, `edit`, `task`,
-  `webfetch`, `question`, `lsp`, `skill`.
+  `webfetch`, `question`, `lsp`, `skill`, plus `bash` in the prompted
+  (approval-required) state.
 
 ## Decision table
 
@@ -43,10 +55,12 @@ Load the reference files only when you need deeper detail.
 | Web search                        | `exa` MCP server                            |
 | Language-server operations        | `lsp` tools                                 |
 | Structured subagent work          | `task` tool                                 |
+| Anything else (shell-only)        | `bash` (last resort; approval required; check `sandbox.md` limitations first) |
 
 ## Reference files
 
 - `sandbox.md` — flatpak sandbox internals: mounts, env injection, failure
   symptoms. Load when a path unexpectedly fails or a secret seems missing.
-- `no-bash-tooling.md` — full playbook for replacing shell commands with
-  dedicated tools. Load when a task seems to require a shell.
+- `bash-avoidance.md` — playbook for preferring dedicated tools over shell,
+  including the no-workaround rule and when bash is appropriate. Load when
+  a task seems to require a shell.

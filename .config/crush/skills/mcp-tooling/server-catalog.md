@@ -56,3 +56,13 @@ time; verify availability by attempting its tools, and fall back gracefully.
 - Auth-related failures (401/403) usually mean the gopass-injected
   environment variable is missing or stale; tell the user which secret is
   affected (name only, never its value).
+
+## bash (built-in, not an MCP server)
+
+- **Purpose:** shell execution as a last resort.
+- **State:** approval-gated; visible to the agent but prompts for user
+  approval on every call. Not on the allow or deny lists.
+- **Constraints:** executes inside the flatpak sandbox, so the same mounts
+  and environment restrictions apply, and host-only toolchains may be
+  absent. Prefer built-in tools and MCP servers first; see the
+  `crush-environment` skill.

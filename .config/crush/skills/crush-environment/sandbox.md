@@ -3,6 +3,10 @@
 Reference for the `crush-environment` skill. Covers how the sandbox is
 launched and what that means in practice.
 
+The `bash` tool also executes inside this sandbox, so the same mount and
+environment restrictions apply to it, and host-only toolchains may be
+absent from the runtime.
+
 ## Launcher
 
 `crush` is a shell function in `.bashrc.d/99-charmcrush.sh` that wraps:

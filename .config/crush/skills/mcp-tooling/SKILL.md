@@ -45,6 +45,11 @@ tools, `webfetch`, or ask the user rather than assuming it must exist.
    the URL, don't pay for a search.
 5. **One server at a time for chained work.** Prefer resolving a task with
    the single most specific server before fanning out.
+6. **Bash is available but approval-gated.** It is the last fallback after
+   built-ins and MCP servers, never the first choice.
+7. **Never use MCP tools to emulate shell work.** That is a workaround,
+   not a preference: use bash directly (with its approval gate) or pick a
+   genuinely fit-for-purpose tool.
 
 ## Reference files
 

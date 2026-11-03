@@ -89,4 +89,6 @@ permissions allow \
   lsp \
   skill
 
-permissions deny bash
+# bash is deliberately NOT in the allow list: it stays in the "Prompted"
+# state, visible to the agent, requiring user approval on every call.
+# Prefer built-in tools and MCP servers; see the crush-environment skill.

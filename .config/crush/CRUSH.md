@@ -85,17 +85,37 @@ For review, debugging, or analysis requests, do not force code changes once find
 
 ## MCP & Tool Use
 
-**IMPORTANT**
-ALWAYS prefer dedicated tool calls or MCP over shell or other script invocations.
-Avoid using the bash tool whenever possible. It is a last-resort.
+The `bash` tool is available but approval-gated: every call pauses the
+session for user approval. Prefer dedicated tools and MCP servers whenever
+they can do the job; treat bash as a last resort.
 
-- Use the dedicated tools for file operations and content search, rather than `cat`, `sed`,
-  `head`, `tail`, `find`, `grep`, `echo`, etc. — even when a shell one-liner
-  would work.
+- Use the dedicated tools for file operations and content search, rather than
+  `cat`, `sed`, `head`, `tail`, `find`, `grep`, `echo`, etc., even when a
+  shell one-liner would work.
 - Reserve shell/script invocation ONLY for what dedicated tools or MCP tools cannot do.
 - Even when a shell command is required, write files via dedicated tools rather
   than redirecting output (`>`/`>>`) or heredocs.
-- It is very likely the bash tool and other scripting tools are disabled. Do not try and find a way around this.
+- Never invoke bash in the middle of a long-running task. Each call blocks on
+  approval and derails the flow. Batch shell work to a natural checkpoint, or
+  surface required commands to the user up front.
+- Batch multiple shell needs into a single invocation only when the commands
+  form one logical task; do not chain unrelated commands just to save prompts.
+
+### No-workaround rule (hard)
+
+- NEVER emulate or route around the bash tool using other tools. If a task
+  calls for shell, either use a tool or MCP server genuinely designed for
+  that job, or use bash directly and accept the approval prompt.
+- Do not write a program in an alternative language (Python, Node, Go, etc.)
+  and invoke it through allowed tools to accomplish what you avoided using
+  bash for. That hides state-changing execution behind tools the user
+  expected to be benign.
+- The same prohibition covers sneaky variants: generating code and asking
+  the user to run it purely to obtain execution, encoding or obfuscating
+  commands, or chaining MCP tools to simulate a shell pipeline.
+- If a task truly needs shell and requesting bash approval is not
+  appropriate, stop and tell the user what needs to run. Do not improvise
+  an execution channel.
 
 ## Subagents
 

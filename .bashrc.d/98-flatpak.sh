@@ -48,6 +48,8 @@ _KB_DEV_TOOLS_COMMON_ARGS=(
   --share=ipc
 )
 
+[[ -n "${_WSL}" ]] && _KB_DEV_TOOLS_COMMON_ARGS+=(--no-documents-portal)
+
 # Generic runner for any tools in the io.github.kardbord.dev flatpak.
 kb-dev-tools() {
   flatpak run \

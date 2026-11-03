@@ -74,3 +74,5 @@ opencode() {
     --env=GIT_COMMITTER_EMAIL="tanner.kvarfordt@proton.me" \
     io.github.kardbord.dev opencode "$@"
 }
+
+eval $(opencode completion 2>/dev/null)

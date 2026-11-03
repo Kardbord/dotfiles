@@ -13,7 +13,7 @@ _REQUIRED_FLATPAKS=(
   "org.freedesktop.Sdk.Extension.mingw-w64"
   "org.freedesktop.Sdk.Extension.node26"
   "org.freedesktop.Sdk.Extension.openjdk"
-  "org.freedesktop.Sdk.Extension.rust-nightly"
+  "org.freedesktop.Sdk.Extension.rust-stable"
   "org.freedesktop.Sdk.Extension.typescript"
 )
 

@@ -31,7 +31,7 @@ provider add huggingface \
   --disable true
 
 model large openrouter/~deepseek/deepseek-flash-latest
-model small openrouter/openrouter/free
+model small openrouter/z-ai/glm-5.3-flash
 
 # MCP servers
 mcp add filesystem \

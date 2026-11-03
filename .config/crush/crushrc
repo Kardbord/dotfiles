@@ -1,0 +1,91 @@
+#!/bin/bash
+
+# General options
+option auto-lsp true
+option progress true
+option metrics false
+option auto-summarize true
+option default-providers false
+option attribution-generated-with false
+option notifications auto
+option provider-auto-update true
+
+# UI options
+option ui diff unified
+
+# Providers and models
+provider add openrouter \
+  --name "OpenRouter" \
+  --api-key "${OPENROUTER_API_KEY:?missing OPENROUTER_API_KEY}" \
+  --base-url "https://openrouter.ai/api/v1" \
+  --type "completions" \
+  --discover-models true
+
+provider add huggingface \
+  --name "Hugging Face" \
+  --api-key "${HF_TOKEN:?missing HF_TOKEN}" \
+  --base-url "https://router.huggingface.co/v1" \
+  --type "completions" \
+  --discover-models true \
+  --disable true
+
+model large openrouter/~deepseek/deepseek-flash-latest
+model small openrouter/openrouter/free
+
+# MCP servers
+mcp add filesystem \
+  --command npx \
+  --args --yes \
+  --args "@modelcontextprotocol/server-filesystem" \
+  --args "./"
+
+mcp add git \
+  --command uvx \
+  --args mcp-server-git \
+  --env GIT_AUTHOR_NAME "${GIT_AUTHOR_NAME}" \
+  --env GIT_AUTHOR_EMAIL "${GIT_AUTHOR_EMAIL}" \
+  --env GIT_COMMITTER_NAME "${GIT_COMMITTER_NAME}" \
+  --env GIT_COMMITTER_EMAIL "${GIT_COMMITTER_EMAIL}"
+
+mcp add bruno \
+  --command npx \
+  --args --yes \
+  --args "@ostico/bruno-mcp" \
+  --disabled true
+
+mcp add exa \
+  --type http \
+  --url "https://mcp.exa.ai/mcp"
+
+mcp add context7 \
+  --type http \
+  --url "https://mcp.context7.com/mcp"
+
+# GitHub integration
+mcp add github \
+  --command go \
+  --args run \
+  --args "github.com/github/github-mcp-server/cmd/github-mcp-server@latest" \
+  --args stdio \
+  --args --read-only \
+  --args --toolsets \
+  --args "actions,git,context,repos,issues,pull_requests" \
+  --env GITHUB_PERSONAL_ACCESS_TOKEN "${GITHUB_PERSONAL_ACCESS_TOKEN}" \
+  --env GOPATH "${XDG_DATA_HOME:-$HOME/.local/share}/go" \
+  --env GOMODCACHE "${XDG_DATA_HOME:-$HOME/.local/share}/go/pkg/mod" \
+  --env GOCACHE "${XDG_CACHE_HOME:-$HOME/.cache}/go-build"
+
+# Permissions
+permissions allow \
+  view \
+  ls \
+  grep \
+  glob \
+  edit \
+  task \
+  webfetch \
+  question \
+  lsp \
+  skill
+
+permissions deny bash

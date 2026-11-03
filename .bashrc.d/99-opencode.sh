@@ -75,4 +75,4 @@ opencode() {
     io.github.kardbord.dev opencode "$@"
 }
 
-eval $(opencode completion 2>/dev/null)
+eval "$(opencode completion 2>/dev/null)"

@@ -48,8 +48,6 @@
   "treeFilterMode": "default",
   "defaultProjectTrust": "ask",
   "defaultTools": [
-    "-bash",
-    "-find",
     "read",
     "edit",
     "write",

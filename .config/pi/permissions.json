@@ -1,0 +1,26 @@
+{
+  "toolCalls": {
+    "allow": [
+      "actionlint",
+      "codemode",
+      "edit",
+      "fd",
+      "go_build",
+      "go_format",
+      "go_help",
+      "go_lint",
+      "go_mod",
+      "go_test",
+      "grep",
+      "jq",
+      "ls",
+      "mcp__context7*",
+      "mcp__exa*",
+      "mcp__github__*",
+      "read",
+      "tool_search",
+      "write",
+      "yq"
+    ]
+  }
+}

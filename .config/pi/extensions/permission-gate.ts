@@ -46,7 +46,12 @@ const CONFIG_PATH = path.join(
 	"permissions.json",
 );
 
-const MAX_SUMMARY_CHARS = 300;
+// Approval-prompt summary sizing: the rendering never takes more than this
+// fraction of the terminal height (leaving room for the dialog chrome), and
+// never less than MIN_PROMPT_LINES even on tiny terminals.
+const MAX_PROMPT_FRACTION = 0.75;
+const MIN_PROMPT_LINES = 10;
+const PROMPT_CHROME_ROWS = 10;
 
 function makeAllowlistMatcher(entries: string[]): (name: string) => boolean {
 	const exact = new Set<string>();
@@ -101,9 +106,29 @@ function describeInput(input: unknown): string {
 		if (typeof obj.command === "string") return obj.command;
 		if (typeof obj.args === "string") return obj.args;
 		if (typeof obj.path === "string") return obj.path;
+		// codemode passes its whole program as one `code` string. Show it
+		// verbatim — it has real newlines, so unlike JSON it reads like code;
+		// the prompt-level line cap bounds its height.
+		if (typeof obj.code === "string") return obj.code;
 	}
-	const json = JSON.stringify(input) ?? "";
-	return json.length > MAX_SUMMARY_CHARS ? `${json.slice(0, MAX_SUMMARY_CHARS)}…` : json;
+	return JSON.stringify(input, null, 2) ?? "";
+}
+
+/** Rows available for the summary: 3/4 of the terminal height minus the
+ * select dialog's own chrome (title, blank line, options, cursor). */
+function promptLineBudget(): number {
+	const rows = process.stdout.rows ?? 0;
+	if (rows <= 0) return 20; // Terminal size unknown; sensible default.
+	return Math.max(MIN_PROMPT_LINES, Math.floor(rows * MAX_PROMPT_FRACTION) - PROMPT_CHROME_ROWS);
+}
+
+/** Cap the summary so the prompt never overflows the screen. */
+function capForPrompt(text: string): string {
+	const budget = promptLineBudget();
+	const lines = text.split("\n");
+	if (lines.length <= budget) return text;
+	const shown = lines.slice(0, budget).join("\n");
+	return `${shown}\n… (+${lines.length - budget} more lines truncated)`;
 }
 
 export default function extension(pi: ExtensionAPI) {
@@ -257,7 +282,7 @@ export default function extension(pi: ExtensionAPI) {
 			};
 		}
 
-		const summary = describeInput(event.input);
+		const summary = capForPrompt(describeInput(event.input));
 		const choice = await ctx.ui.select(
 			`Allow ${name}?\n\n${summary || "(no arguments)"}`,
 			["Allow", "Allow for this session", "Deny"],

@@ -24,6 +24,11 @@
  * - The prompt offers a per-session grant ("Allow for this session"); the
  *   grant is held in memory only and cleared whenever a session starts.
  *
+ * Unknown-entry validation is MCP-aware: `mcp.json` servers connect in the
+ * background after `session_start`, so `mcp__<server>` entries are validated
+ * against the configured server names instead of registered tools, and any
+ * remaining unknowns are re-checked once at the first tool call.
+ *
  * Reload the config with /permissions-reload.
  */
 
@@ -53,6 +58,43 @@ function makeAllowlistMatcher(entries: string[]): (name: string) => boolean {
 	return (name) => exact.has(name) || prefixes.some((p) => name.startsWith(p));
 }
 
+function mcpEntryServer(entry: string): string | null {
+	if (!entry.startsWith("mcp__")) return null;
+	const rest = entry.slice("mcp__".length);
+	const sep = rest.indexOf("__");
+	if (sep !== -1) return rest.slice(0, sep);
+	return rest.endsWith("*") ? rest.slice(0, -1) : rest;
+}
+
+/**
+ * Server names configured in mcp.json (agent dir, plus project dir for
+ * trusted projects, mirroring what pi itself honors). Read for validation
+ * only, so a missing or unreadable file just means no known names; the
+ * allowlist itself is unaffected.
+ */
+async function configuredMcpServers(sessionCwd?: string, projectTrusted?: boolean): Promise<Set<string>> {
+	const names = new Set<string>();
+	const files = [
+		path.join(path.dirname(CONFIG_PATH), "mcp.json"),
+		...(sessionCwd && projectTrusted ? [path.join(sessionCwd, ".pi", "mcp.json")] : []),
+	];
+	for (const file of files) {
+		try {
+			const parsed: unknown = JSON.parse(await readFile(file, "utf8"));
+			const map = (parsed as { mcpServers?: unknown } | null)?.mcpServers;
+			if (map === null || typeof map !== "object" || Array.isArray(map)) continue;
+			for (const [name, config] of Object.entries(map)) {
+				if (config !== null && typeof config === "object" && (config as { enabled?: unknown }).enabled !== false) {
+					names.add(name);
+				}
+			}
+		} catch {
+			// Best-effort.
+		}
+	}
+	return names;
+}
+
 function describeInput(input: unknown): string {
 	if (input && typeof input === "object") {
 		const obj = input as Record<string, unknown>;
@@ -66,8 +108,10 @@ function describeInput(input: unknown): string {
 
 export default function extension(pi: ExtensionAPI) {
 	const problems: string[] = [];
+	const unknownEntries: string[] = [];
 	const sessionGrants = new Set<string>();
 	let allowCount = 0;
+	let lateCheckDone = false;
 	let isAllowed = (_name: string): boolean => false;
 
 	async function loadConfig(ctx?: ExtensionCommandContext): Promise<string> {
@@ -99,26 +143,73 @@ export default function extension(pi: ExtensionAPI) {
 		allowCount = allow.length;
 
 		// Best-effort warning for entries that match no known tool. MCP tools
-		// may not be registered yet at startup, so this can under-warn.
+		// register asynchronously once their server connects (after
+		// session_start), so `mcp__<server>` entries are validated against the
+		// servers configured in mcp.json instead; anything else that is still
+		// unknown gets re-checked at the first tool call.
+		lateCheckDone = false;
+		unknownEntries.length = 0;
 		const known = new Set<string>();
 		try {
 			for (const tool of pi.getAllTools()) known.add(tool.name);
 		} catch {
 			// Validation is best-effort.
 		}
+		const mcpServers = await configuredMcpServers(ctx?.cwd, ctx?.isProjectTrusted());
 		for (const entry of allow) {
 			const base = entry.endsWith("*") ? entry.slice(0, -1) : entry;
-			if (![...known].some((n) => n.startsWith(base))) {
-				problems.push(`"${entry}" does not match any known tool (yet?)`);
-			}
+			if (![...known].some((n) => n.startsWith(base))) unknownEntries.push(entry);
 		}
+		const unmatched = unknownEntries.filter((entry) => {
+			const server = mcpEntryServer(entry);
+			return server === null || !mcpServers.has(server);
+		});
 
+		const warnings = [...problems, ...unmatched.map((e) => `"${e}" does not match any known tool (yet?)`)];
 		let msg = `permission-gate: ${allowCount} allow ${allowCount === 1 ? "entry" : "entries"} from ${CONFIG_PATH}`;
-		if (problems.length > 0) {
-			msg += `\n${problems.map((p) => `  ! ${p}`).join("\n")}`;
+		if (warnings.length > 0) {
+			msg += `\n${warnings.map((p) => `  ! ${p}`).join("\n")}`;
 		}
-		if (ctx?.hasUI) await ctx.ui.notify(msg, problems.length > 0 ? "warning" : "info");
+		if (ctx?.hasUI) await ctx.ui.notify(msg, warnings.length > 0 ? "warning" : "info");
 		return msg;
+	}
+
+	/**
+	 * Once-only re-check of entries still unknown after loading. By the first
+	 * tool call, everything that registers in this session (MCP tools whose
+	 * servers connected, script tools from later-loaded extensions, ...) has
+	 * registered. Entries that became known are cleared; entries that are
+	 * still unknown are reported once.
+	 */
+	async function recheckUnknownEntries(ctx: ExtensionCommandContext): Promise<void> {
+		if (lateCheckDone || unknownEntries.length === 0) return;
+		lateCheckDone = true;
+		let known: Set<string>;
+		try {
+			known = new Set(pi.getAllTools().map((tool) => tool.name));
+		} catch {
+			return;
+		}
+		const still = unknownEntries.filter((entry) => {
+			const base = entry.endsWith("*") ? entry.slice(0, -1) : entry;
+			return ![...known].some((n) => n.startsWith(base));
+		});
+		if (still.length === unknownEntries.length) return; // Nothing changed; keep the startup report.
+		const resolved = unknownEntries.filter((entry) => !still.includes(entry));
+		unknownEntries.length = 0;
+		unknownEntries.push(...still);
+		if (!ctx.hasUI) return;
+		if (still.length === 0) {
+			await ctx.ui.notify(
+				`permission-gate: previously unmatched allow ${resolved.length === 1 ? "entry" : "entries"} ${resolved.length === 1 ? "matches" : "match"} a registered tool: ${resolved.map((e) => `"${e}"`).join(", ")}`,
+				"info",
+			);
+		} else {
+			await ctx.ui.notify(
+				`permission-gate: allow ${still.length === 1 ? "entry" : "entries"} still do not match any known tool:\n${still.map((e) => `  ! "${e}"`).join("\n")}`,
+				"warning",
+			);
+		}
 	}
 
 	void loadConfig().catch((err: unknown) => {
@@ -155,6 +246,7 @@ export default function extension(pi: ExtensionAPI) {
 	});
 
 	pi.on("tool_call", async (event, ctx) => {
+		await recheckUnknownEntries(ctx);
 		const name = event.toolName;
 		if (isAllowed(name) || sessionGrants.has(name)) return undefined;
 

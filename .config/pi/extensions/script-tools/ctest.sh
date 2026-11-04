@@ -6,8 +6,6 @@
 set -euo pipefail
 
 source "$(dirname "${BASH_SOURCE[0]}")/include/check_dependencies.sh"
-source "$(dirname "${BASH_SOURCE[0]}")/include/str_to_arr.sh"
 
 check_dependencies ctest
-str_to_arr PI_TOOL_ARGS "${PI_TOOL_ARGS}"
-ctest "${PI_TOOL_ARGS[@]}"
+ctest "$@"

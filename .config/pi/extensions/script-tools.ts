@@ -2,13 +2,13 @@
  * script-tools — turn bash scripts into LLM-callable tools.
  *
  * Drop executable bash scripts into the script-tools directory (default
- * `~/.config/pi/script-tools`, override with `PI_SCRIPT_TOOLS_DIR`). Each
+ * `<agent-dir>/extensions/script-tools`, override with `PI_SCRIPT_TOOLS_DIR`). Each
  * script declares its interface in a header comment block:
  *
  *   #!/usr/bin/env bash
  *   # tool: my_tool                  (optional; defaults to filename without .sh)
  *   # description: What the tool does — shown to the LLM
- *   # timeout: 60000                 (optional, milliseconds)
+ *   # timeout: 60000                 (optional, milliseconds; default 60000)
  *   # param: branch required Branch to deploy
  *   # param: dry_run boolean optional Skip actual deploy
  *   # param: mode oneof:fast,safe optional Deployment mode
@@ -25,6 +25,15 @@
  * become ""), plus PI_TOOL_ARGS_JSON holding the full args object and
  * PI_TOOL_SCRIPT_NAME holding the tool's name. The script runs with the
  * current session's cwd.
+ *
+ * A string param named `args` is additionally tokenized with POSIX shell
+ * quoting rules (single quotes, double quotes, backslash escapes) and passed
+ * to the script as positional parameters, available as `"$@"`. Quoted
+ * arguments — including ones containing spaces or newlines — survive intact.
+ *
+ * Tool-call permission gating (deny by default, with an allowlist in
+ * permissions.json at the agent-directory root) is handled by the separate
+ * permission-gate extension, not here.
  *
  * Reload with /script-tools-reload after editing scripts.
  */
@@ -48,6 +57,8 @@ const RESERVED_NAMES = new Set([
 	"read", "bash", "powershell", "edit", "write", "grep", "find", "ls",
 	"codemode", "thought", "todo", "subagent",
 ]);
+
+const DEFAULT_TIMEOUT_MS = 60_000;
 
 const MAX_OUTPUT_CHARS = 30_000;
 
@@ -183,6 +194,64 @@ function shellQuote(s: string): string {
 	return `'${s.replace(/'/g, `'\\''`)}'`;
 }
 
+function tokenizeArgs(input: string): string[] {
+	const tokens: string[] = [];
+	let current = "";
+	let hasToken = false;
+	let state: "normal" | "single" | "double" = "normal";
+
+	for (let i = 0; i < input.length; i++) {
+		const ch = input[i];
+		if (state === "single") {
+			if (ch === "'") {
+				state = "normal";
+			} else {
+				current += ch;
+			}
+		} else if (state === "double") {
+			if (ch === '"') {
+				state = "normal";
+			} else if (ch === "\\") {
+				const next = input[++i];
+				if (next === undefined) {
+					current += ch;
+				} else {
+					// Inside double quotes, only these escapes are special in POSIX shells.
+					current += next === '"' || next === "\\" || next === "$" || next === "`" ? next : `\\${next}`;
+				}
+			} else {
+				current += ch;
+			}
+		} else if (/\s/.test(ch)) {
+			if (hasToken) {
+				tokens.push(current);
+				current = "";
+				hasToken = false;
+			}
+		} else if (ch === "'") {
+			state = "single";
+			hasToken = true;
+		} else if (ch === '"') {
+			state = "double";
+			hasToken = true;
+		} else if (ch === "\\") {
+			const next = input[++i];
+			if (next === undefined) {
+				current += ch;
+				hasToken = true;
+			} else {
+				current += next;
+				hasToken = true;
+			}
+		} else {
+			current += ch;
+			hasToken = true;
+		}
+	}
+	if (hasToken) tokens.push(current);
+	return tokens;
+}
+
 function truncate(s: string): { text: string; truncated: boolean } {
 	if (s.length <= MAX_OUTPUT_CHARS) return { text: s, truncated: false };
 	return {
@@ -210,12 +279,17 @@ function makeScriptTool(pi: ExtensionAPI, spec: ScriptSpec) {
 			const exports = Object.entries(env)
 				.map(([k, v]) => `export ${k}=${shellQuote(v)}`)
 				.join("; ");
-			const command = `${exports}; exec bash ${shellQuote(spec.path)}`;
+			const argsParam = spec.params.find((p) => p.name === "args" && p.type === "string");
+			const argv = argsParam
+				? tokenizeArgs(String((params as Record<string, unknown>)[argsParam.name] ?? ""))
+				: [];
+			const positionalArgs = argv.map(shellQuote).join(" ");
+			const command = `${exports}; exec bash ${shellQuote(spec.path)}${positionalArgs ? ` ${positionalArgs}` : ""}`;
 
 			const result = await pi.exec("bash", ["-c", command], {
 				cwd: ctx.cwd,
 				signal,
-				timeout: spec.timeout,
+				timeout: spec.timeout ?? DEFAULT_TIMEOUT_MS,
 			});
 
 			const stdout = (result.stdout ?? "").trim();
@@ -272,6 +346,8 @@ function extension(pi: ExtensionAPI) {
 			return msg;
 		}
 
+		problems.length = 0;
+
 		const names: string[] = [];
 		for (const file of files) {
 			const base = path.basename(file, ".sh");
@@ -303,16 +379,31 @@ function extension(pi: ExtensionAPI) {
 	// Register during extension load so tools are available immediately.
 	// session_start re-loads if the eager load hasn't finished yet; both are
 	// idempotent (registering the same name replaces the prior definition).
-	void loadAll();
+	void loadAll().catch((err: unknown) => {
+		problems.push(`loadAll failed: ${err instanceof Error ? err.message : String(err)}`);
+	});
 
 	pi.on("session_start", async () => {
-		if (!loadedOnce) await loadAll();
+		if (!loadedOnce) {
+			try {
+				await loadAll();
+			} catch (err) {
+				problems.push(`loadAll failed: ${err instanceof Error ? err.message : String(err)}`);
+			}
+		}
 	});
 
 	pi.registerCommand("script-tools-reload", {
 		description: "Reload script tools (bash-script-defined tools)",
 		handler: async (_args, ctx) => {
-			await loadAll(ctx);
+			try {
+				await loadAll(ctx);
+			} catch (err) {
+				await ctx.ui.notify(
+					`script-tools: reload failed: ${err instanceof Error ? err.message : String(err)}`,
+					"error",
+				);
+			}
 		},
 	});
 

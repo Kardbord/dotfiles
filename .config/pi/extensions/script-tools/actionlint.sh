@@ -1,6 +1,7 @@
 #!/bin/bash
 # tool: actionlint
 # description: Runs `actionlint` followed by the arguments you pass.
+# detect: .github/
 # param: args string required The arguments to pass to `actionlint`.
 
 set -euo pipefail

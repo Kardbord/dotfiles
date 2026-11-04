@@ -1,6 +1,7 @@
 #!/bin/bash
 # tool: ctest
 # description: Runs `ctest` followed by the arguments you pass.
+# detect: CMakeLists.txt,CMakeCache.txt,*.cmake
 # param: args string optional The arguments to pass to `ctest`.
 
 set -euo pipefail

@@ -22,6 +22,8 @@ non-comment, non-blank line:
 # tool: deploy                    (optional; defaults to filename without .sh)
 # description: What the tool does — shown to the LLM
 # timeout: 60000                  (optional, milliseconds; default 60000)
+# lazy                            (optional; defer until tool_search loads the tool)
+# detect: go.mod,*.go             (optional; auto-activate when a marker matches the session cwd)
 # param: branch required Branch to deploy
 # param: dry_run boolean optional Skip actual deploy
 # param: mode oneof:fast,safe optional Deployment mode
@@ -39,6 +41,29 @@ set -euo pipefail
 - `type` defaults to `string`.
 - `required|optional` defaults to `required`.
 - `oneof:` defines an enum (the LLM can only pass the listed values).
+
+### Lazy tools
+
+Add a bare `# lazy` line (or `# lazy: on`) to register the tool with
+`deferred` exposure: it is not declared to the model at startup and costs no
+prompt space. The built-in `tool_search` tool declares it on demand — the
+tool stays declared for the rest of the session — and codemode scripts can
+call it at any time without declaration. Permission gating is unaffected;
+deferred tools still go through the allowlist like everything else.
+
+### Detected (auto-activation)
+
+`# detect: marker[,marker...]` registers the tool inactive and activates it
+automatically when any marker matches an entry at the root of the session
+cwd. Markers are exact names (`go.mod`), `*`/`?` globs (`*.go`), or
+directory names (a trailing `/` is ignored, e.g. `.github`).
+
+- Detection runs on every session start (including `/resume`) and after
+  `/script-tools-reload`, using the session cwd.
+- Fail closed: if the cwd cannot be read, nothing is activated.
+- Unmatched detect tools stay deferred; `tool_search` can load them on
+  demand. `# lazy` composes: lazy tools are never eager, detect tools are
+  eager only on a match. Permission gating is unaffected either way.
 
 ### Passing values to the script
 

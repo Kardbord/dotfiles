@@ -9,6 +9,8 @@
  *   # tool: my_tool                  (optional; defaults to filename without .sh)
  *   # description: What the tool does — shown to the LLM
  *   # timeout: 60000                 (optional, milliseconds; default 60000)
+ *   # lazy                           (optional; defer the tool until tool_search loads it)
+ *   # detect: go.mod,*.go            (optional; activate when a marker matches the session cwd)
  *   # param: branch required Branch to deploy
  *   # param: dry_run boolean optional Skip actual deploy
  *   # param: mode oneof:fast,safe optional Deployment mode
@@ -34,6 +36,19 @@
  * Tool-call permission gating (deny by default, with an allowlist in
  * permissions.json at the agent-directory root) is handled by the separate
  * permission-gate extension, not here.
+ *
+ * `# lazy` defers a tool: with `deferred` exposure it is not declared to the
+ * model at startup and costs no prompt space. The built-in `tool_search`
+ * tool declares it on demand — it stays declared for the rest of the
+ * session — and codemode scripts can call it at any time. Permission gating
+ * still applies to every call.
+ *
+ * `# detect: marker,marker,...` registers the tool inactive and activates it
+ * automatically when any marker (exact name, `*`/`?` glob, or directory name
+ * with an optional trailing `/`) matches an entry at the root of the session
+ * cwd. Detection re-runs on every session start (including resume) and after
+ * /script-tools-reload. If no marker matches or the cwd cannot be read, the
+ * tool stays deferred until tool_search loads it (fail closed).
  *
  * Reload with /script-tools-reload after editing scripts.
  */
@@ -75,6 +90,8 @@ interface ScriptSpec {
 	description: string;
 	promptSnippet?: string;
 	timeout?: number;
+	lazy?: boolean;
+	detect?: string[];
 	params: ParamSpec[];
 	path: string;
 }
@@ -130,7 +147,11 @@ function parseHeader(text: string, fallbackName: string, filePath: string): Scri
 		if (line.startsWith("#!")) continue; // shebang
 
 		const body = line.replace(/^#+\s*/, "");
-		const m = body.match(/^(tool|description|timeout|param):\s*(.*)$/);
+		if (body === "lazy") {
+			spec.lazy = true;
+			continue;
+		}
+		const m = body.match(/^(tool|description|timeout|param|lazy|detect):\s*(.*)$/);
 		if (!m) continue;
 		const [, key, value] = m;
 
@@ -142,6 +163,15 @@ function parseHeader(text: string, fallbackName: string, filePath: string): Scri
 		} else if (key === "timeout") {
 			const ms = Number.parseInt(value.trim(), 10);
 			if (Number.isFinite(ms) && ms > 0) spec.timeout = ms;
+		} else if (key === "lazy") {
+			const flag = value.trim().toLowerCase();
+			spec.lazy = flag !== "off" && flag !== "false";
+		} else if (key === "detect") {
+			spec.detect ??= [];
+			for (const marker of value.split(",")) {
+				const trimmed = marker.trim();
+				if (trimmed && !spec.detect.includes(trimmed)) spec.detect.push(trimmed);
+			}
 		} else if (key === "param") {
 			const param = parseParam(value);
 			if (param && !spec.params.some((p) => p.name === param.name)) {
@@ -267,6 +297,8 @@ function makeScriptTool(pi: ExtensionAPI, spec: ScriptSpec) {
 		description: spec.description,
 		promptSnippet: spec.promptSnippet,
 		parameters: buildSchema(spec.params),
+		...(spec.lazy ? { exposure: "deferred" as const } : {}),
+		...(spec.lazy || spec.detect ? { defaultActive: false as const } : {}),
 
 		async execute(_toolCallId, params, signal, _onUpdate, ctx) {
 			const env: Record<string, string> = { PI_TOOL_SCRIPT_NAME: spec.name };
@@ -330,7 +362,50 @@ function makeScriptTool(pi: ExtensionAPI, spec: ScriptSpec) {
 function extension(pi: ExtensionAPI) {
 	const loaded: string[] = [];
 	const problems: string[] = [];
+	const detectTools: { name: string; markers: string[] }[] = [];
 	let loadedOnce = false;
+
+	// A detect tool activates when any of its markers (exact name or `*`/`?`
+	// glob) matches an entry at the root of the given directory. A directory
+	// read failure fails closed: nothing is activated.
+	function markerToRegex(marker: string): RegExp {
+		const pattern = marker
+			.replace(/[.+^${}()|[\]\\]/g, "\\$&")
+			.replace(/\*/g, ".*")
+			.replace(/\?/g, ".");
+		return new RegExp(`^${pattern}$`);
+	}
+
+	async function detectAndActivate(cwd: string): Promise<void> {
+		const withMarkers = detectTools.filter((t) => t.markers.length > 0);
+		if (withMarkers.length === 0) return;
+
+		let entryNames: string[];
+		try {
+			const entries = await readdir(cwd, { withFileTypes: true });
+			entryNames = entries.map((e) => e.name);
+		} catch {
+			return;
+		}
+
+		const matched: string[] = [];
+		for (const tool of withMarkers) {
+			const hit = tool.markers.some((raw) => {
+				const marker = raw.endsWith("/") ? raw.slice(0, -1) : raw;
+				return entryNames.some((entry) => markerToRegex(marker).test(entry));
+			});
+			if (hit) matched.push(tool.name);
+		}
+		if (matched.length === 0) return;
+
+		try {
+			const active = new Set(pi.getActiveTools());
+			for (const name of matched) active.add(name);
+			pi.setActiveTools([...active]);
+		} catch (err) {
+			problems.push(`detect: ${err instanceof Error ? err.message : String(err)}`);
+		}
+	}
 
 	async function loadAll(ctx?: ExtensionCommandContext): Promise<string> {
 		let files: string[];
@@ -349,6 +424,7 @@ function extension(pi: ExtensionAPI) {
 		problems.length = 0;
 
 		const names: string[] = [];
+		detectTools.length = 0;
 		for (const file of files) {
 			const base = path.basename(file, ".sh");
 			const scriptName = base.replace(/[^a-zA-Z0-9_]/g, "_").replace(/^[0-9]/, "_$&");
@@ -360,6 +436,9 @@ function extension(pi: ExtensionAPI) {
 				}
 				pi.registerTool(makeScriptTool(pi, spec));
 				names.push(spec.name);
+				if (spec.detect && spec.detect.length > 0) {
+					detectTools.push({ name: spec.name, markers: spec.detect });
+				}
 			} catch (err) {
 				problems.push(`${base}.sh: ${err instanceof Error ? err.message : String(err)}`);
 			}
@@ -383,13 +462,20 @@ function extension(pi: ExtensionAPI) {
 		problems.push(`loadAll failed: ${err instanceof Error ? err.message : String(err)}`);
 	});
 
-	pi.on("session_start", async () => {
+	pi.on("session_start", async (_event, ctx) => {
 		if (!loadedOnce) {
 			try {
 				await loadAll();
 			} catch (err) {
 				problems.push(`loadAll failed: ${err instanceof Error ? err.message : String(err)}`);
 			}
+		}
+		// Re-derive detection on every session start (startup, new, resume,
+		// fork, reload): the session cwd may differ from the process cwd.
+		try {
+			await detectAndActivate(ctx.cwd);
+		} catch (err) {
+			problems.push(`detect failed: ${err instanceof Error ? err.message : String(err)}`);
 		}
 	});
 
@@ -398,6 +484,7 @@ function extension(pi: ExtensionAPI) {
 		handler: async (_args, ctx) => {
 			try {
 				await loadAll(ctx);
+				await detectAndActivate(ctx.cwd);
 			} catch (err) {
 				await ctx.ui.notify(
 					`script-tools: reload failed: ${err instanceof Error ? err.message : String(err)}`,

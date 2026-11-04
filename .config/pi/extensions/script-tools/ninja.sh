@@ -1,6 +1,7 @@
 #!/bin/bash
 # tool: ninja
 # description: Runs `ninja` followed by the arguments you pass.
+# detect: build.ninja
 # param: args string optional The arguments to pass to `ninja`.
 
 set -euo pipefail

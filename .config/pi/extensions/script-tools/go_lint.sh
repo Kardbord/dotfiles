@@ -1,6 +1,7 @@
 #!/bin/bash
 # tool: go_lint
 # description: Runs `golangci-lint` followed by the arguments you pass.
+# detect: go.mod,go.sum,*.go
 # param: args string required The arguments to pass to `golangci-lint`.
 
 set -euo pipefail

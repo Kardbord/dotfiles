@@ -1,6 +1,7 @@
 #!/bin/bash
 # tool: make
 # description: Runs `make` followed by the arguments you pass.
+# detect: Makefile,GNUmakefile,makefile
 # param: args string optional The arguments to pass to `make`.
 
 set -euo pipefail

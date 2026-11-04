@@ -64,9 +64,11 @@ import {
 	type ExtensionCommandContext,
 } from "@earendil-works/pi-coding-agent";
 
+// Fallback must match permission-gate.ts so both extensions read configs
+// from the same directory when PI_CODING_AGENT_DIR is unset.
+const AGENT_DIR = process.env.PI_CODING_AGENT_DIR ?? path.join(homedir(), ".pi", "agent");
 const TOOLS_DIR =
-	process.env.PI_SCRIPT_TOOLS_DIR ??
-	path.join(process.env.PI_CODING_AGENT_DIR, "extensions", "script-tools")
+	process.env.PI_SCRIPT_TOOLS_DIR ?? path.join(AGENT_DIR, "extensions", "script-tools");
 
 const RESERVED_NAMES = new Set([
 	"read", "bash", "powershell", "edit", "write", "grep", "find", "ls",

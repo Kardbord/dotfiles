@@ -77,5 +77,3 @@ pi() {
     --env=GIT_COMMITTER_EMAIL="tanner.kvarfordt@proton.me" \
     io.github.kardbord.dev pi "$@"
 }
-
-eval "$(npx --quiet -y pi-completion bash)"

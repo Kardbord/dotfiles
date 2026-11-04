@@ -48,12 +48,12 @@
   "treeFilterMode": "default",
   "defaultProjectTrust": "ask",
   "defaultTools": [
+    "-bash",
+    "-find",
     "read",
-    "bash",
     "edit",
     "write",
     "grep",
-    "find",
     "ls",
     "codemode",
     "tool_search"
@@ -66,7 +66,7 @@
   },
   "theme": "system",
   "quietStartup": false,
-  "tuiMode": "regular",
+  "tuiMode": "fullscreen",
   "fullscreenExitOutput": "resume-hint",
   "fullscreenScrollbar": "auto",
   "fullscreenCopyOnSelect": true,

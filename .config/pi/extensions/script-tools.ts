@@ -1,0 +1,322 @@
+/**
+ * script-tools — turn bash scripts into LLM-callable tools.
+ *
+ * Drop executable bash scripts into the script-tools directory (default
+ * `~/.config/pi/script-tools`, override with `PI_SCRIPT_TOOLS_DIR`). Each
+ * script declares its interface in a header comment block:
+ *
+ *   #!/usr/bin/env bash
+ *   # tool: my_tool                  (optional; defaults to filename without .sh)
+ *   # description: What the tool does — shown to the LLM
+ *   # timeout: 60000                 (optional, milliseconds)
+ *   # param: branch required Branch to deploy
+ *   # param: dry_run boolean optional Skip actual deploy
+ *   # param: mode oneof:fast,safe optional Deployment mode
+ *
+ * The header ends at the first non-comment, non-blank line.
+ *
+ * Param syntax:
+ *   # param: <name> [string|number|boolean|oneof:a,b,c] [required|optional] [description]
+ *
+ * Defaults: type=string, required=true.
+ *
+ * At execution, every param is exported as an env var named
+ * PI_TOOL_<NAME_UPPERCASE> (booleans become "true"/"false", absent optionals
+ * become ""), plus PI_TOOL_ARGS_JSON holding the full args object and
+ * PI_TOOL_SCRIPT_NAME holding the tool's name. The script runs with the
+ * current session's cwd.
+ *
+ * Reload with /script-tools-reload after editing scripts.
+ */
+
+import { readFile, readdir } from "node:fs/promises";
+import { homedir } from "node:os";
+import path from "node:path";
+
+import { StringEnum, Type } from "@earendil-works/pi-ai";
+import {
+	defineTool,
+	type ExtensionAPI,
+	type ExtensionCommandContext,
+} from "@earendil-works/pi-coding-agent";
+
+const TOOLS_DIR =
+	process.env.PI_SCRIPT_TOOLS_DIR ??
+	path.join(process.env.PI_CODING_AGENT_DIR, "extensions", "script-tools")
+
+const RESERVED_NAMES = new Set([
+	"read", "bash", "powershell", "edit", "write", "grep", "find", "ls",
+	"codemode", "thought", "todo", "subagent",
+]);
+
+const MAX_OUTPUT_CHARS = 30_000;
+
+interface ParamSpec {
+	name: string;
+	type: "string" | "number" | "boolean";
+	enumValues?: string[];
+	required: boolean;
+	description?: string;
+}
+
+interface ScriptSpec {
+	name: string;
+	description: string;
+	promptSnippet?: string;
+	timeout?: number;
+	params: ParamSpec[];
+	path: string;
+}
+
+// ---------------------------------------------------------------------------
+// Header parsing
+// ---------------------------------------------------------------------------
+
+function parseParam(rest: string): ParamSpec | undefined {
+	const tokens = rest.trim().split(/\s+/);
+	const name = tokens.shift();
+	if (!name || !/^[A-Za-z_][A-Za-z0-9-]*$/.test(name)) return undefined;
+
+	const spec: ParamSpec = { name, type: "string", required: true };
+
+	let i = 0;
+	const first = tokens[i];
+	if (first && first.startsWith("oneof:")) {
+		const values = first.slice("oneof:".length).split(",").filter(Boolean);
+		if (values.length > 0) {
+			spec.enumValues = values;
+			spec.type = "string";
+			i++;
+		}
+	} else if (first === "string" || first === "number" || first === "boolean") {
+		spec.type = first;
+		i++;
+	}
+
+	const second = tokens[i];
+	if (second === "required" || second === "optional") {
+		spec.required = second === "required";
+		i++;
+	}
+
+	const description = tokens.slice(i).join(" ").trim();
+	if (description) spec.description = description;
+	return spec;
+}
+
+function parseHeader(text: string, fallbackName: string, filePath: string): ScriptSpec {
+	const spec: ScriptSpec = {
+		name: fallbackName,
+		description: `Custom tool running the script ${filePath}`,
+		params: [],
+		path: filePath,
+	};
+
+	for (const raw of text.split("\n")) {
+		const line = raw.trim();
+		if (line === "") continue;
+		if (!line.startsWith("#")) break; // header ends at the first code line
+		if (line.startsWith("#!")) continue; // shebang
+
+		const body = line.replace(/^#+\s*/, "");
+		const m = body.match(/^(tool|description|timeout|param):\s*(.*)$/);
+		if (!m) continue;
+		const [, key, value] = m;
+
+		if (key === "tool") {
+			const name = value.trim();
+			if (/^[a-zA-Z][a-zA-Z0-9_]*$/.test(name)) spec.name = name;
+		} else if (key === "description") {
+			spec.description = value.trim() || spec.description;
+		} else if (key === "timeout") {
+			const ms = Number.parseInt(value.trim(), 10);
+			if (Number.isFinite(ms) && ms > 0) spec.timeout = ms;
+		} else if (key === "param") {
+			const param = parseParam(value);
+			if (param && !spec.params.some((p) => p.name === param.name)) {
+				spec.params.push(param);
+			}
+		}
+	}
+
+	// One-liner for the system prompt <tools> section.
+	const firstSentence =
+		spec.description.split(/(?<=[.!?])\s|\n/)[0]?.trim() ?? spec.description;
+	spec.promptSnippet = firstSentence.length > 120
+		? `${firstSentence.slice(0, 117)}...`
+		: firstSentence;
+
+	return spec;
+}
+
+// ---------------------------------------------------------------------------
+// Schema + execution
+// ---------------------------------------------------------------------------
+
+function buildSchema(params: ParamSpec[]) {
+	const props: Record<string, any> = {};
+	for (const p of params) {
+		let t: any;
+		if (p.enumValues) {
+			t = StringEnum(p.enumValues as [string, ...string[]], {
+				description: p.description,
+			});
+		} else if (p.type === "number") {
+			t = Type.Number({ description: p.description });
+		} else if (p.type === "boolean") {
+			t = Type.Boolean({ description: p.description });
+		} else {
+			t = Type.String({ description: p.description });
+		}
+		props[p.name] = p.required ? t : Type.Optional(t);
+	}
+	return Type.Object(props, { additionalProperties: false });
+}
+
+function envName(paramName: string): string {
+	const upper = paramName.toUpperCase().replace(/[^A-Z0-9_]/g, "_");
+	const safe = /^[0-9]/.test(upper) ? `_${upper}` : upper;
+	return `PI_TOOL_${safe}`;
+}
+
+function shellQuote(s: string): string {
+	return `'${s.replace(/'/g, `'\\''`)}'`;
+}
+
+function truncate(s: string): { text: string; truncated: boolean } {
+	if (s.length <= MAX_OUTPUT_CHARS) return { text: s, truncated: false };
+	return {
+		text: `${s.slice(0, MAX_OUTPUT_CHARS / 2)}\n... [output truncated, ${s.length - MAX_OUTPUT_CHARS} chars removed] ...\n${s.slice(-MAX_OUTPUT_CHARS / 2)}`,
+		truncated: true,
+	};
+}
+
+function makeScriptTool(pi: ExtensionAPI, spec: ScriptSpec) {
+	return defineTool({
+		name: spec.name,
+		label: spec.name,
+		description: spec.description,
+		promptSnippet: spec.promptSnippet,
+		parameters: buildSchema(spec.params),
+
+		async execute(_toolCallId, params, signal, _onUpdate, ctx) {
+			const env: Record<string, string> = { PI_TOOL_SCRIPT_NAME: spec.name };
+			for (const p of spec.params) {
+				const value = (params as Record<string, unknown>)[p.name];
+				env[envName(p.name)] = value === undefined ? "" : String(value);
+			}
+			env.PI_TOOL_ARGS_JSON = JSON.stringify(params ?? {});
+
+			const exports = Object.entries(env)
+				.map(([k, v]) => `export ${k}=${shellQuote(v)}`)
+				.join("; ");
+			const command = `${exports}; exec bash ${shellQuote(spec.path)}`;
+
+			const result = await pi.exec("bash", ["-c", command], {
+				cwd: ctx.cwd,
+				signal,
+				timeout: spec.timeout,
+			});
+
+			const stdout = (result.stdout ?? "").trim();
+			const stderr = (result.stderr ?? "").trim();
+			const out = truncate(stdout || stderr ? stdout : "(no output)");
+			const err = truncate(stderr);
+
+			const parts: string[] = [];
+			if (out.text) parts.push(out.text);
+			if (err.text) parts.push(`stderr:\n${err.text}`);
+			if (result.killed) {
+				parts.push("(terminated: aborted, timed out, or output limit hit)");
+			}
+
+			if (result.code !== 0) {
+				parts.push(`exit code: ${result.code}`);
+			}
+
+			const text = parts.join("\n");
+			return {
+				content: [{ type: "text", text }],
+				isError: result.code !== 0,
+				details: {
+					script: spec.path,
+					exitCode: result.code,
+					killed: result.killed,
+					truncated: out.truncated || err.truncated || result.truncated,
+				},
+			};
+		},
+	});
+}
+
+// ---------------------------------------------------------------------------
+// Loading + registration
+// ---------------------------------------------------------------------------
+
+function extension(pi: ExtensionAPI) {
+	const loaded: string[] = [];
+	const problems: string[] = [];
+	let loadedOnce = false;
+
+	async function loadAll(ctx?: ExtensionCommandContext): Promise<string> {
+		let files: string[];
+		try {
+			const entries = await readdir(TOOLS_DIR, { withFileTypes: true });
+			files = entries
+				.filter((e) => e.isFile() && e.name.endsWith(".sh"))
+				.map((e) => path.join(TOOLS_DIR, e.name))
+				.sort();
+		} catch {
+			const msg = `script-tools: cannot read ${TOOLS_DIR}`;
+			if (ctx) await ctx.ui.notify(msg, "warning");
+			return msg;
+		}
+
+		const names: string[] = [];
+		for (const file of files) {
+			const base = path.basename(file, ".sh");
+			const scriptName = base.replace(/[^a-zA-Z0-9_]/g, "_").replace(/^[0-9]/, "_$&");
+			try {
+				const spec = parseHeader(await readFile(file, "utf8"), scriptName, file);
+				if (RESERVED_NAMES.has(spec.name)) {
+					problems.push(`${base}.sh: name "${spec.name}" is reserved, skipped`);
+					continue;
+				}
+				pi.registerTool(makeScriptTool(pi, spec));
+				names.push(spec.name);
+			} catch (err) {
+				problems.push(`${base}.sh: ${err instanceof Error ? err.message : String(err)}`);
+			}
+		}
+
+		loaded.length = 0;
+		loaded.push(...names);
+		loadedOnce = true;
+
+		let msg = `script-tools: ${names.length} tool(s) from ${TOOLS_DIR}`;
+		if (names.length > 0) msg += `: ${names.join(", ")}`;
+		if (problems.length > 0) msg += `\n${problems.map((p) => `  ! ${p}`).join("\n")}`;
+		if (ctx) await ctx.ui.notify(msg, problems.length > 0 ? "warning" : "info");
+		return msg;
+	}
+
+	// Register during extension load so tools are available immediately.
+	// session_start re-loads if the eager load hasn't finished yet; both are
+	// idempotent (registering the same name replaces the prior definition).
+	void loadAll();
+
+	pi.on("session_start", async () => {
+		if (!loadedOnce) await loadAll();
+	});
+
+	pi.registerCommand("script-tools-reload", {
+		description: "Reload script tools (bash-script-defined tools)",
+		handler: async (_args, ctx) => {
+			await loadAll(ctx);
+		},
+	});
+
+
+}
+
+export default extension;

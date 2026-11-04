@@ -1,0 +1,88 @@
+{
+  "$schema": "https://pi.dev/schemas/settings.schema.json",
+  "defaultProvider": "openrouter",
+  "defaultModel": "~z-ai/glm-flash-latest",
+  "defaultThinkingLevel": "high",
+  "enabledModels": [
+    "openrouter/auto",
+    "openrouter/free",
+    "openrouter/fusion",
+    "openrouter/pareto-code",
+    "typesafe/jev-router",
+    "~anthropic/claude-fable-latest",
+    "~anthropic/claude-haiku-latest",
+    "~anthropic/claude-opus-latest",
+    "~anthropic/claude-sonnet-latest",
+    "~deepseek/deepseek-flash-latest",
+    "~deepseek/deepseek-pro-latest",
+    "~deepseek/deepseek-v4-flash-latest",
+    "~google/gemini-flash-latest",
+    "~google/gemini-pro-latest",
+    "~moonshotai/kimi-latest",
+    "~z-ai/glm-flash-latest",
+    "google/gemini-3.5-flash-lite",
+    "google/gemma-4-31b-it",
+    "ibm-granite/granite-4.2-8b",
+    "inception/mercury-2.5",
+    "inclusionai/ling-3.1-flash",
+    "minimax/minimax-m3",
+    "mistralai/mistral-small-2603",
+    "moonshotai/kimi-k2.6",
+    "moonshotai/kimi-k2.7-code",
+    "nex-agi/nex-n2.5-pro",
+    "nvidia/nemotron-3.5-lightning",
+    "qwen/qwen3.8-flash",
+    "qwen/qwen3.8-omni-flash",
+    "stepfun/step-3.5-flash",
+    "tencent/hy3",
+    "xiaomi/mimo-v2.6-pro",
+    "z-ai/glm-5.3-flash",
+    "z-ai/glm-5.3-flashx"
+  ],
+  "showCacheMissNotices": true,
+  "cacheWarming": "streaming",
+  "steeringMode": "all",
+  "followUpMode": "all",
+  "externalEditor": "nvim",
+  "doubleEscapeAction": "tree",
+  "treeFilterMode": "default",
+  "defaultProjectTrust": "ask",
+  "defaultTools": [
+    "read",
+    "bash",
+    "edit",
+    "write",
+    "grep",
+    "find",
+    "ls",
+    "codemode",
+    "tool_search"
+  ],
+  "codemode": {
+    "mode": "on"
+  },
+  "compaction": {
+    "enabled": true
+  },
+  "theme": "system",
+  "quietStartup": false,
+  "tuiMode": "regular",
+  "fullscreenExitOutput": "resume-hint",
+  "fullscreenScrollbar": "auto",
+  "fullscreenCopyOnSelect": true,
+  "fullscreenWheelScrollLines": "auto",
+  "terminal": {
+    "showImages": true,
+    "showTerminalProgress": true,
+    "hyperlinks": "auto",
+    "images": "auto",
+    "trueColor": "auto"
+  },
+  "images": {
+    "autoResize": true,
+    "blockImages": false
+  },
+  "markdown": {
+    "mermaid": "streaming"
+  }
+}

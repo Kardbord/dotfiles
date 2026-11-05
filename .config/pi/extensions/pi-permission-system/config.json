@@ -32,7 +32,13 @@
       "exa": "allow",
       "filesystem": "allow",
       "git": "allow",
-      "github": "allow"
+      "github": "allow",
+      "git_add": "ask",
+      "git_checkout": "ask",
+      "git_commit": "ask",
+      "git_create_branch": "ask",
+      "git_merge": "ask",
+      "git_reset": "ask"
     },
     "path": {
       "*": "allow",

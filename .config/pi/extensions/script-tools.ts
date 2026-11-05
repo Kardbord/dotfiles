@@ -38,6 +38,14 @@
  * extensions/pi-permission-system/config.json) is handled by the separate
  * @gotgenes/pi-permission-system package, not here.
  *
+ * Script-tool paths are also routed through the permission system: on each
+ * `permissions:ready`, an access extractor is registered per script tool that
+ * surfaces the first path-shaped token in the tool's string inputs to the
+ * `path` and `external_directory` gates (at parity with built-in tools). The
+ * gates — not this extension — decide allow/ask/deny. Limitation: an
+ * extractor yields one path per call, so a call referencing several paths
+ * gates on the first one found.
+ *
  * `# lazy` defers a tool: with `deferred` exposure it is not declared to the
  * model at startup and costs no prompt space. The built-in `tool_search`
  * tool declares it on demand — it stays declared for the rest of the
@@ -54,6 +62,7 @@
  * Reload with /script-tools-reload after editing scripts.
  */
 
+import { existsSync } from "node:fs";
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -360,6 +369,45 @@ function makeScriptTool(pi: ExtensionAPI, spec: ScriptSpec) {
 }
 
 // ---------------------------------------------------------------------------
+// Access extractors (permission-system integration)
+// ---------------------------------------------------------------------------
+
+// True when a token looks like a filesystem path the permission system's
+// path/external_directory gates should evaluate. Options (leading "-") are
+// skipped except when they carry an attached path value ("-o/tmp/x").
+function isPathToken(token: string): boolean {
+	if (token.length === 0) return false;
+	if (token.startsWith("-")) {
+		// Option carrying an attached path value ("-o/tmp/x"); bare flags skipped.
+		return token.length > 2 && token.includes("/");
+	}
+	// Contains a separator, or is a bare name that exists (mirroring the bash
+	// path gate's bare-name-if-exists rule).
+	return token.includes("/") || existsSync(token);
+}
+
+function firstPathToken(input: Record<string, unknown>): string | undefined {
+	for (const value of Object.values(input)) {
+		if (typeof value !== "string" || value.length === 0) continue;
+		for (const token of tokenizeArgs(value)) {
+			if (isPathToken(token)) return token;
+		}
+	}
+	return undefined;
+}
+
+function makeExtractor(): (input: Record<string, unknown>) => string | undefined {
+	return (input) => {
+		try {
+			return firstPathToken(input);
+		} catch {
+			// The extractor must never throw: a throw would break the gate.
+			return undefined;
+		}
+	};
+}
+
+// ---------------------------------------------------------------------------
 // Loading + registration
 // ---------------------------------------------------------------------------
 
@@ -368,6 +416,49 @@ function extension(pi: ExtensionAPI) {
 	const problems: string[] = [];
 	const detectTools: { name: string; markers: string[] }[] = [];
 	let loadedOnce = false;
+
+	// --- Permission-system access extractors ---
+	// Surfaces the first path-shaped token of each script tool's string inputs
+	// to the `path`/`external_directory` gates (see header comment). Registered
+	// per tool name, per session node; one extractor per name (duplicate
+	// registration throws, hence the disposition map).
+	const extractorDisposers = new Map<string, () => void>();
+	let lastSessionId: string | undefined;
+
+	function syncExtractors(sessionId: string | undefined): void {
+		if (!sessionId) return;
+		lastSessionId = sessionId;
+		void (async () => {
+			try {
+				const { getPermissionsService } =
+					await import("@gotgenes/pi-permission-system");
+				const permissions = getPermissionsService(sessionId);
+				if (!permissions) return;
+				for (const name of loaded) {
+					if (extractorDisposers.has(name)) continue;
+					try {
+						extractorDisposers.set(name, permissions.registerToolAccessExtractor(name, makeExtractor()));
+					} catch (err) {
+						problems.push(
+							`extractor ${name}: ${err instanceof Error ? err.message : String(err)}`,
+						);
+					}
+				}
+			} catch {
+				// Permission system not installed — script-tool args stay ungated.
+			}
+		})();
+	}
+
+	// permissions:ready fires at least once per session (session_start, then
+	// the first before_agent_start) and handlers must be idempotent; ready may
+	// fire before the eager tool load finishes, hence the ensureLoaded await.
+	pi.events.on("permissions:ready", (data) => {
+		const sessionId = (data as { sessionId?: unknown } | undefined)?.sessionId;
+		void ensureLoaded()
+			.then(() => syncExtractors(typeof sessionId === "string" ? sessionId : undefined))
+			.catch(() => {});
+	});
 
 	// A detect tool activates when any of its markers (exact name or `*`/`?`
 	// glob) matches an entry at the root of the given directory. A directory
@@ -452,6 +543,10 @@ function extension(pi: ExtensionAPI) {
 		loaded.push(...names);
 		loadedOnce = true;
 
+		// Pick up extractors for tools added by a mid-session reload; on normal
+		// startups the permissions:ready / session_start hooks cover this.
+		syncExtractors(lastSessionId);
+
 		let msg = `script-tools: ${names.length} tool(s) from ${TOOLS_DIR}`;
 		if (names.length > 0) msg += `: ${names.join(", ")}`;
 		if (problems.length > 0) msg += `\n${problems.map((p) => `  ! ${p}`).join("\n")}`;
@@ -490,6 +585,7 @@ function extension(pi: ExtensionAPI) {
 				problems.push(`loadAll failed: ${err instanceof Error ? err.message : String(err)}`);
 			}
 		}
+		syncExtractors(ctx.sessionManager.getSessionId());
 		// Re-derive detection on every session start (startup, new, resume,
 		// fork, reload): the session cwd may differ from the process cwd.
 		try {
@@ -497,6 +593,11 @@ function extension(pi: ExtensionAPI) {
 		} catch (err) {
 			problems.push(`detect failed: ${err instanceof Error ? err.message : String(err)}`);
 		}
+	});
+
+	pi.on("session_shutdown", () => {
+		for (const dispose of extractorDisposers.values()) dispose();
+		extractorDisposers.clear();
 	});
 
 	pi.registerCommand("script-tools-reload", {

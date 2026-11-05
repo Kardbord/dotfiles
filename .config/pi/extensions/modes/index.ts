@@ -31,11 +31,14 @@
  *
  * Subagent propagation: a subagent launched from a read/plan session carries
  * the current mode to the child via extension bindings; the child's copy of
- * this extension restores it at session_start, so the child enforces the same
- * read-only selection. Foreground (`async: false`) children are blocked in
- * read/plan mode because they run in-process without ambient extensions and
- * the mode could not be enforced there. An optional per-mode allowlist
- * restricts which agents may be launched (unset = all agents allowed):
+ * this extension restores it at session_start with a restrictive-wins merge
+ * (a propagated read/plan binding floors a persisted build mode, and a
+ * persisted read/plan mode is never widened by a build binding), so the child
+ * always enforces at least the parent's read-only selection. Foreground
+ * (`async: false`) children are blocked in read/plan mode because they run
+ * in-process without ambient extensions and the mode could not be enforced
+ * there. An optional per-mode allowlist restricts which agents may be
+ * launched (unset = all agents allowed):
  *
  *   "read": { "subagents": { "allow": ["reviewer"] } }
  *
@@ -189,6 +192,20 @@ function modeFromBindings(): Mode | undefined {
 	} catch {
 		return undefined;
 	}
+}
+
+/**
+ * Most-restrictive merge of a restored mode and a parent-propagated binding.
+ * A propagated read/plan binding floors a persisted build mode (closing the
+ * retained-child leak), while a persisted read/plan mode is never widened by
+ * a build binding. read and plan tie (both read-only), so the restored mode
+ * wins a tie. Undefined inputs are ignored.
+ */
+function restrictiveMode(a: Mode | undefined, b: Mode | undefined): Mode {
+	if (a === undefined) return b ?? "build";
+	if (b === undefined) return a;
+	const strictness: Record<Mode, number> = { build: 0, read: 1, plan: 1 };
+	return strictness[a] >= strictness[b] ? a : b;
 }
 
 /**
@@ -425,12 +442,14 @@ export default function modesExtension(pi: ExtensionAPI): void {
 			.filter((e: { type: string; customType?: string }) => e.type === "custom" && e.customType === "modes")
 			.pop() as { data?: { mode?: Mode; savedTools?: string[] } } | undefined;
 
-		// Precedence: explicit CLI flag > session restore (the child's own
-		// persisted mode) > parent-propagated binding > build. The persisted mode
-		// is authoritative: if the binding env var ever leaks into a resume, a
-		// child the user switched to a different mode must not be reverted.
-		// Fresh launches have no persisted mode, so the binding still applies.
-		mode = flagMode ?? last?.data?.mode ?? modeFromBindings() ?? "build";
+		// Restrictive-wins merge: the restored mode (explicit CLI flag, else the
+		// session's own persisted mode) is floored by the parent-propagated
+		// binding whenever the binding is read/plan — a retained child previously
+		// left in build mode cannot escape a read-only parent — and a persisted
+		// read/plan mode is never widened by a build binding. Fresh launches
+		// with no persisted mode simply follow the binding.
+		const restored: Mode | undefined = flagMode ?? last?.data?.mode;
+		mode = restrictiveMode(restored, modeFromBindings());
 		savedTools = last?.data?.savedTools;
 
 		applyMode(ctx, false);

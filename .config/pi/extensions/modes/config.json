@@ -33,7 +33,18 @@
       "+todo",
       "+tool_search",
       "+yq"
-    ]
+    ],
+    "subagents": {
+      "allow": [
+        "scout",
+        "worker",
+        "researcher",
+        "evidence-auditor",
+        "delegate",
+        "reviewer",
+        "oracle"
+      ]
+    }
   },
   "plan": {
     "tools": [
@@ -69,6 +80,17 @@
       "+todo",
       "+tool_search",
       "+yq"
-    ]
+    ],
+    "subagents": {
+      "allow": [
+        "scout",
+        "worker",
+        "researcher",
+        "evidence-auditor",
+        "delegate",
+        "reviewer",
+        "oracle"
+      ]
+    }
   }
 }

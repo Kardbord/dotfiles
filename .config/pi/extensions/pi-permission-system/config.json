@@ -1,4 +1,5 @@
 {
+  "promptTimeoutMs": 60000,
   "permission": {
     "*": "ask",
     "actionlint": "allow",
@@ -31,7 +32,12 @@
       "context7": "allow",
       "exa": "allow",
       "filesystem": "allow",
-      "git": "allow",
+      "git": "ask",
+      "git_status": "allow",
+      "git_log": "allow",
+      "git_show": "allow",
+      "git_diff*": "allow",
+      "git_fetch": "allow",
       "github": "allow",
       "git_add": "ask",
       "git_checkout": "ask",
@@ -44,7 +50,16 @@
       "*": "allow",
       "*.env": "deny",
       "*.env*": "deny",
-      "*.env.example": "allow"
+      "*.env.example": "allow",
+      "*.pem": "deny",
+      "*.p12": "deny",
+      "id_rsa": "deny",
+      "id_ed25519": "deny",
+      "~/.ssh/*": "deny",
+      "auth.json": "deny",
+      "mcp-auth.json": "deny",
+      "models-store.json": "deny",
+      "sessions/*": "deny"
     },
     "external_directory": {
       "*": "ask",

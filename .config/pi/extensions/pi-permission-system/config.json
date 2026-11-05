@@ -35,6 +35,9 @@
     "mcp__git__git_status": "allow",
     "mcp__github__*": "allow",
     "read": "allow",
+    "subagent": "allow",
+    "subagents_enable": "allow",
+    "subagent_supervisor": "allow",
     "todo": "allow",
     "tool_search": "allow",
     "write": "allow",
@@ -47,7 +50,9 @@
     },
     "external_directory": {
       "*": "ask",
-      "/app/lib/kardbord-tools/pi/": "allow"
+      "/app/lib/kardbord-tools/pi/": "allow",
+      "~/.config/pi": "allow",
+      "~/.pi": "allow"
     }
   }
 }

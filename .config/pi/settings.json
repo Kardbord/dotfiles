@@ -83,6 +83,49 @@
   "markdown": {
     "mermaid": "streaming"
   },
+  "subagents": {
+    "defaultModel": "~z-ai/glm-flash-latest",
+    "defaultThinking": "medium",
+    "agentOverrides": {
+      "scout": {
+        "model": "~z-ai/glm-flash-latest"
+      },
+      "worker": {
+        "model": "~z-ai/glm-flash-latest"
+      },
+      "researcher": {
+        "model": "~z-ai/glm-flash-latest"
+      },
+      "evidence-auditor": {
+        "model": "~z-ai/glm-flash-latest"
+      },
+      "delegate": {
+        "model": "~z-ai/glm-flash-latest"
+      },
+      "reviewer": {
+        "model": "moonshotai/kimi-k2.7-code",
+        "thinking": "high"
+      },
+      "oracle": {
+        "model": "moonshotai/kimi-k2.6",
+        "thinking": "high"
+      }
+    },
+    "modelScope": {
+      "enforce": true,
+      "strict": true,
+      "allow": [
+        "scoped",
+        "*glm-*",
+        "*kimi-k2*",
+        "*deepseek*",
+        "*gemini-flash*",
+        "*mimo-*",
+        "*qwen*flash*",
+        "openrouter/free"
+      ]
+    }
+  },
   "packages": [
     "npm:pi-subagents",
     "npm:@juicesharp/rpiv-ask-user-question",

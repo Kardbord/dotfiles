@@ -27,6 +27,9 @@
       "+mcp__git__git_status",
       "+mcp__github__*",
       "+read",
+      "+subagent",
+      "+subagents_enable",
+      "+subagent_supervisor",
       "todo",
       "+tool_search",
       "+yq"
@@ -60,6 +63,9 @@
       "+mcp__git__git_status",
       "+mcp__github__*",
       "+read",
+      "+subagent",
+      "+subagents_enable",
+      "+subagent_supervisor",
       "todo",
       "+tool_search",
       "+yq"

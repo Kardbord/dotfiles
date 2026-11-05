@@ -1,8 +1,9 @@
 /**
  * script-tools — turn bash scripts into LLM-callable tools.
  *
- * Drop executable bash scripts into the script-tools directory (default
- * `<agent-dir>/extensions/script-tools`, override with `PI_SCRIPT_TOOLS_DIR`). Each
+ * Drop executable bash scripts into the script-tools directory (default:
+ * the `script-tools` directory next to this extension file; override with
+ * `PI_SCRIPT_TOOLS_DIR`). Each
  * script declares its interface in a header comment block:
  *
  *   #!/usr/bin/env bash
@@ -34,8 +35,8 @@
  * arguments — including ones containing spaces or newlines — survive intact.
  *
  * Tool-call permission gating (deny by default, with an allowlist in
- * permissions.json at the agent-directory root) is handled by the separate
- * permission-gate extension, not here.
+ * extensions/pi-permission-system/config.json) is handled by the separate
+ * @gotgenes/pi-permission-system package, not here.
  *
  * `# lazy` defers a tool: with `deferred` exposure it is not declared to the
  * model at startup and costs no prompt space. The built-in `tool_search`
@@ -54,8 +55,8 @@
  */
 
 import { readFile, readdir } from "node:fs/promises";
-import { homedir } from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { StringEnum, Type } from "@earendil-works/pi-ai";
 import {
@@ -64,11 +65,12 @@ import {
 	type ExtensionCommandContext,
 } from "@earendil-works/pi-coding-agent";
 
-// Fallback must match permission-gate.ts so both extensions read configs
-// from the same directory when PI_CODING_AGENT_DIR is unset.
-const AGENT_DIR = process.env.PI_CODING_AGENT_DIR ?? path.join(homedir(), ".pi", "agent");
+// Default to the script-tools directory that ships alongside this extension
+// file, keeping the dotfiles setup self-contained. PI_SCRIPT_TOOLS_DIR
+// overrides the default.
+const EXTENSION_DIR = path.dirname(fileURLToPath(import.meta.url));
 const TOOLS_DIR =
-	process.env.PI_SCRIPT_TOOLS_DIR ?? path.join(AGENT_DIR, "extensions", "script-tools");
+	process.env.PI_SCRIPT_TOOLS_DIR ?? path.join(EXTENSION_DIR, "script-tools");
 
 const RESERVED_NAMES = new Set([
 	"read", "bash", "powershell", "edit", "write", "grep", "find", "ls",

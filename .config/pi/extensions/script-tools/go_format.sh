@@ -1,6 +1,7 @@
 #!/bin/bash
 # tool: go_format
 # description: Runs `gofmt` followed by the arguments you pass.
+# lazy
 # detect: go.mod,go.sum,*.go
 # param: args string required The arguments to pass to `gofmt`.
 

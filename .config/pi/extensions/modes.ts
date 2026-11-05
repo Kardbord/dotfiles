@@ -76,7 +76,11 @@ What you must do:
   before diving deep.
 - Do NOT attempt to create, modify, or delete anything. Edit/write tools are
   disabled. If the user wants changes made, tell them to switch to build
-  mode (Tab cycles modes) — or to plan mode if they first want a plan.`;
+  mode (Tab cycles modes) — or to plan mode if they first want a plan.
+
+Note: script tools (e.g. go_test, jq) execute project code and take freeform
+string arguments that are not path-checked — "read-only" here means no direct
+file modifications, not sandboxing.`;
 
 const PLAN_CONTEXT = `[PLAN MODE ACTIVE]
 You are in plan mode — a strictly read-only mode whose goal is to produce an
@@ -95,7 +99,11 @@ What you must produce:
 What you must NOT do:
 - Do NOT implement anything. Edit/write tools are disabled. Changes happen
   after the user presses Tab to return to build mode and asks you to
-  execute the plan.`;
+  execute the plan.
+
+Note: script tools (e.g. go_test, jq) execute project code and take freeform
+string arguments that are not path-checked — plan mode forbids direct file
+modifications but is not a sandbox.`;
 
 // Glob helper: `mcp__github__*` matches any suffix, plain names match exactly.
 function matchPattern(pattern: string, name: string): boolean {

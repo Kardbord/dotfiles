@@ -1,6 +1,7 @@
 #!/bin/bash
 # tool: go_mod
 # description: Runs `go mod` followed by the arguments you pass.
+# lazy
 # detect: go.mod,go.sum,*.go
 # param: args string required The arguments to pass to `go mod`.
 

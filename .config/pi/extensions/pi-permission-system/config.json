@@ -1,0 +1,51 @@
+{
+  "permission": {
+    "*": "ask",
+    "actionlint": "allow",
+    "bash": "deny",
+    "codemode": "allow",
+    "edit": "allow",
+    "fd": "allow",
+    "go_build": "allow",
+    "go_format": "allow",
+    "go_help": "allow",
+    "go_lint": "allow",
+    "go_mod": "allow",
+    "go_test": "allow",
+    "grep": "allow",
+    "jq": "allow",
+    "lens_diagnostics": "allow",
+    "ls": "allow",
+    "mcp__context7*": "allow",
+    "mcp__exa*": "allow",
+    "mcp__filesystem__directory_tree": "allow",
+    "mcp__filesystem__get_file_info": "allow",
+    "mcp__filesystem__list_allowed_directories": "allow",
+    "mcp__filesystem__list_directory": "allow",
+    "mcp__filesystem__read_multiple_files": "allow",
+    "mcp__filesystem__read_text_file": "allow",
+    "mcp__filesystem__search_files": "allow",
+    "mcp__git__git_diff": "allow",
+    "mcp__git__git_diff_staged": "allow",
+    "mcp__git__git_diff_unstaged": "allow",
+    "mcp__git__git_log": "allow",
+    "mcp__git__git_show": "allow",
+    "mcp__git__git_status": "allow",
+    "mcp__github__*": "allow",
+    "read": "allow",
+    "todo": "allow",
+    "tool_search": "allow",
+    "write": "allow",
+    "yq": "allow",
+    "path": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env*": "deny",
+      "*.env.example": "allow"
+    },
+    "external_directory": {
+      "*": "ask",
+      "/app/lib/kardbord-tools/pi/": "allow"
+    }
+  }
+}

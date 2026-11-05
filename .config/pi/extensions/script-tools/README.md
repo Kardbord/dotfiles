@@ -4,13 +4,13 @@ Bash scripts here are automatically registered as LLM-callable tools by the
 `script-tools` extension (`../script-tools.ts`). To add a tool, drop a `.sh`
 file in this directory and run `/script-tools-reload` (or restart pi).
 
-The scripts directory defaults to `extensions/script-tools` inside the pi
-agent directory; override it with the `PI_SCRIPT_TOOLS_DIR` environment
+The scripts directory defaults to the `script-tools` directory next to
+`../script-tools.ts`; override it with the `PI_SCRIPT_TOOLS_DIR` environment
 variable.
 
-Tool-call permission gating is handled separately by the `permission-gate`
-extension (`../permission-gate.ts`), configured in `permissions.json` at the
-agent-directory root.
+Tool-call permission gating is handled separately by the
+`@gotgenes/pi-permission-system` package, configured in
+`../pi-permission-system/config.json`.
 
 ## Script header format
 

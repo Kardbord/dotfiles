@@ -2,6 +2,7 @@
 # tool: cpack
 # description: Runs `cpack` followed by the arguments you pass.
 # detect: CMakeLists.txt,CMakeCache.txt,*.cmake
+# lazy
 # param: args string optional The arguments to pass to `cpack`.
 
 set -euo pipefail

@@ -62,6 +62,9 @@
       "sessions/*": "deny"
     },
     "external_directory": {
+      "*": "ask"
+    },
+    "external_directory_read": {
       "*": "ask",
       "/app/lib/kardbord-tools/pi/": "allow",
       "~/.config/pi": "allow",

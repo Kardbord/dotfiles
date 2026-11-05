@@ -89,6 +89,8 @@
     "npm:@juicesharp/rpiv-todo",
     "npm:pi-lens",
     "npm:pi-powerline-footer",
-    "npm:@gotgenes/pi-permission-system"
+    "npm:@gotgenes/pi-permission-system",
+    "npm:pi-open-tui",
+    "npm:awesome-pi-themes"
   ]
 }

@@ -21,13 +21,16 @@
  *
  * The bash tool is disabled entirely by the separate no-bash extension.
  *
- * Configuration (settings.json, agent or project level):
+ * Configuration (extensions/modes/config.json, next to this file):
  *
- *   "modes": {
+ *   {
  *     "read": { "tools": ["+actionlint", "-mcp__exa*"] },
  *     "plan": { "tools": ["+go_test"] },
  *     "build": { "tools": ["-mcp__filesystem*"] }
  *   }
+ *
+ * A missing or unparseable config file means "no configuration" and falls
+ * back to the read-only defaults (below); it can never widen permissions.
  *
  * Tool-list semantics follow `defaultTools`: plain names or `*` patterns
  * replace the mode's default selection, `+pat` adds tools, `-pat` removes
@@ -37,6 +40,9 @@
  * defaults would block ("edit", MCP tools, etc.).
  */
 
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { AgentMessage } from "@earendil-works/pi-agent-core";
 import type { TextContent } from "@earendil-works/pi-ai";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
@@ -59,7 +65,7 @@ const PI_READ_ONLY_TOOLS = new Set(["read", "grep", "find", "ls", "tool_search"]
 
 // Pi built-in tools that are write-capable (or reach write-capable tools via
 // codemode scripts): excluded from the fallback selection in read/plan mode.
-// An explicit per-mode configuration in settings.json overrides this.
+// An explicit per-mode configuration in config.json overrides this.
 const HARD_BLOCKED_TOOLS = new Set(["edit", "write", "bash", "powershell", "codemode"]);
 
 const READ_CONTEXT = `[READ MODE ACTIVE]
@@ -114,12 +120,23 @@ function matchPattern(pattern: string, name: string): boolean {
 	return re.test(name);
 }
 
-interface ModeSettings {
-	modes?: Partial<Record<Mode, { tools?: string[] }>>;
+// Extension-owned config file, resolved next to this source file (immune to
+// PI_CODING_AGENT_DIR changes). Read fresh on each mode resolution so edits
+// apply on the next mode switch without a restart.
+const CONFIG_PATH = join(dirname(fileURLToPath(import.meta.url)), "config.json");
+
+type ModesConfig = Partial<Record<Mode, { tools?: string[] }>>;
+
+function loadModeConfig(): ModesConfig {
+	try {
+		return JSON.parse(readFileSync(CONFIG_PATH, "utf8")) as ModesConfig;
+	} catch {
+		return {};
+	}
 }
 
-function modeToolEntries(pi: ExtensionAPI, target: Mode): string[] | undefined {
-	const tools = (pi.getSettings() as ModeSettings | undefined)?.modes?.[target]?.tools;
+function modeToolEntries(_pi: ExtensionAPI, target: Mode): string[] | undefined {
+	const tools = loadModeConfig()[target]?.tools;
 	return Array.isArray(tools) ? tools.map(String) : undefined;
 }
 

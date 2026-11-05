@@ -59,68 +59,6 @@
   "codemode": {
     "mode": "on"
   },
-  "modes": {
-    "read": {
-      "tools": [
-        "+actionlint",
-        "+fd",
-        "+go_build",
-        "+go_help",
-        "+go_lint",
-        "+go_test",
-        "+grep",
-        "+jq",
-        "+ls",
-        "+mcp__context7*",
-        "+mcp__exa*",
-        "+mcp__filesystem__directory_tree",
-        "+mcp__filesystem__get_file_info",
-        "+mcp__filesystem__list_allowed_directories",
-        "+mcp__filesystem__list_directory",
-        "+mcp__filesystem__read_multiple_files",
-        "+mcp__filesystem__read_text_file",
-        "+mcp__filesystem__search_files",
-        "+mcp__git__git_diff*",
-        "+mcp__git__git_log",
-        "+mcp__git__git_show",
-        "+mcp__git__git_status",
-        "+mcp__github__*",
-        "+read",
-        "+tool_search",
-        "+yq"
-      ]
-    },
-    "plan": {
-      "tools": [
-        "+actionlint",
-        "+fd",
-        "+go_build",
-        "+go_help",
-        "+go_lint",
-        "+go_test",
-        "+grep",
-        "+jq",
-        "+ls",
-        "+mcp__context7*",
-        "+mcp__exa*",
-        "+mcp__filesystem__directory_tree",
-        "+mcp__filesystem__get_file_info",
-        "+mcp__filesystem__list_allowed_directories",
-        "+mcp__filesystem__list_directory",
-        "+mcp__filesystem__read_multiple_files",
-        "+mcp__filesystem__read_text_file",
-        "+mcp__filesystem__search_files",
-        "+mcp__git__git_diff*",
-        "+mcp__git__git_log",
-        "+mcp__git__git_show",
-        "+mcp__git__git_status",
-        "+mcp__github__*",
-        "+read",
-        "+tool_search",
-        "+yq"
-      ]
-    }
-  },
   "compaction": {
     "enabled": true
   },

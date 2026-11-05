@@ -2,6 +2,7 @@
   "permission": {
     "*": "ask",
     "actionlint": "allow",
+    "ask_user_question": "allow",
     "bash": "deny",
     "codemode": "allow",
     "edit": "allow",
@@ -25,6 +26,7 @@
     "mcp__filesystem__read_multiple_files": "allow",
     "mcp__filesystem__read_text_file": "allow",
     "mcp__filesystem__search_files": "allow",
+    "mcp__filesystem__move_file": "allow",
     "mcp__git__git_diff": "allow",
     "mcp__git__git_diff_staged": "allow",
     "mcp__git__git_diff_unstaged": "allow",

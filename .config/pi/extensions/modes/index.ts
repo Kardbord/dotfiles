@@ -29,6 +29,16 @@
  *     "build": { "tools": ["-mcp__filesystem*"] }
  *   }
  *
+ * Subagent propagation: a subagent launched from a read/plan session carries
+ * the current mode to the child via extension bindings; the child's copy of
+ * this extension restores it at session_start, so the child enforces the same
+ * read-only selection. Foreground (`async: false`) children are blocked in
+ * read/plan mode because they run in-process without ambient extensions and
+ * the mode could not be enforced there. An optional per-mode allowlist
+ * restricts which agents may be launched (unset = all agents allowed):
+ *
+ *   "read": { "subagents": { "allow": ["reviewer"] } }
+ *
  * A missing or unparseable config file means "no configuration" and falls
  * back to the read-only defaults (below); it can never widen permissions.
  *
@@ -86,7 +96,8 @@ What you must do:
 
 Note: script tools (e.g. go_test, jq) execute project code and take freeform
 string arguments that are not path-checked — "read-only" here means no direct
-file modifications, not sandboxing.`;
+file modifications, not sandboxing. In particular, go_build may write build
+outputs (e.g. a compiled binary) into the working tree.`;
 
 const PLAN_CONTEXT = `[PLAN MODE ACTIVE]
 You are in plan mode — a strictly read-only mode whose goal is to produce an
@@ -109,7 +120,8 @@ What you must NOT do:
 
 Note: script tools (e.g. go_test, jq) execute project code and take freeform
 string arguments that are not path-checked — plan mode forbids direct file
-modifications but is not a sandbox.`;
+modifications but is not a sandbox. In particular, go_build may write build
+outputs (e.g. a compiled binary) into the working tree.`;
 
 // Glob helper: `mcp__github__*` matches any suffix, plain names match exactly.
 function matchPattern(pattern: string, name: string): boolean {
@@ -125,7 +137,12 @@ function matchPattern(pattern: string, name: string): boolean {
 // apply on the next mode switch without a restart.
 const CONFIG_PATH = join(dirname(fileURLToPath(import.meta.url)), "config.json");
 
-type ModesConfig = Partial<Record<Mode, { tools?: string[] }>>;
+// Extension-bindings namespace used to propagate the current mode to subagent
+// children. The child's copy of this extension reads it back from
+// PI_SUBAGENT_EXTENSION_BINDINGS at session_start (see modeFromBindings).
+const MODE_BINDING_KEY = "modes/1";
+
+type ModesConfig = Partial<Record<Mode, { tools?: string[]; subagents?: { allow?: string[] } }>>;
 
 function loadModeConfig(): ModesConfig {
 	try {
@@ -155,6 +172,23 @@ function isReadOnlyTool(pi: ExtensionAPI, name: string): boolean {
 
 function readOnlyToolNames(pi: ExtensionAPI, names: string[]): string[] {
 	return [...new Set(names.filter((name) => isReadOnlyTool(pi, name)))];
+}
+
+/**
+ * Mode propagated from a parent session via subagent extension bindings.
+ * Invalid or missing data means "no propagation" and falls through to the
+ * normal session-restore defaults; it can never widen permissions on its own.
+ */
+function modeFromBindings(): Mode | undefined {
+	try {
+		const raw = process.env.PI_SUBAGENT_EXTENSION_BINDINGS;
+		if (!raw) return undefined;
+		const parsed = JSON.parse(raw) as Record<string, unknown>;
+		const m = (parsed?.[MODE_BINDING_KEY] as { mode?: unknown } | undefined)?.mode;
+		return m === "read" || m === "plan" || m === "build" ? m : undefined;
+	} catch {
+		return undefined;
+	}
 }
 
 /**
@@ -284,14 +318,69 @@ export default function modesExtension(pi: ExtensionAPI): void {
 		},
 	});
 
-	// Block anything that slips through the active-tool filter.
+	/**
+	 * In read/plan mode, propagate the current mode to a subagent child:
+	 * merge it into the launch's extension bindings (the child's copy of this
+	 * extension restores it in session_start), and refuse launches that cannot
+	 * be enforced. Returns a block result, or undefined when the launch may
+	 * proceed (with input mutated in place).
+	 */
+	function handleSubagentCall(event: { input: unknown }): { block: true; reason: string } | undefined {
+		if (typeof event.input !== "object" || event.input === null) return undefined;
+		const input = event.input as {
+			agent?: unknown;
+			async?: unknown;
+			options?: { extensionBindings?: unknown } & Record<string, unknown>;
+		};
+
+		const agent = typeof input.agent === "string" ? input.agent : undefined;
+		const allow = loadModeConfig()[mode]?.subagents?.allow;
+		if (allow && agent && !allow.some((pattern) => matchPattern(pattern, agent))) {
+			return {
+				block: true,
+				reason: `Mode "${mode}" restricts subagents to: ${allow.join(", ")}. "${agent}" is blocked.\nPress Tab to switch to build mode to use it.`,
+			};
+		}
+
+		if (input.async === false) {
+			return {
+				block: true,
+				reason: `Mode "${mode}" is read-only: foreground (async: false) subagents run in-process without ambient extensions, so the mode cannot be enforced in the child.\nRelaunch the subagent with async: true (the default), or switch to build mode.`,
+			};
+		}
+
+		const options = input.options ?? (input.options = {});
+		const existing = options.extensionBindings;
+		const bindings: Record<string, unknown> =
+			existing && typeof existing === "object" && !Array.isArray(existing)
+				? { ...(existing as Record<string, unknown>) }
+				: {};
+		const prior = bindings[MODE_BINDING_KEY];
+		bindings[MODE_BINDING_KEY] = {
+			...(prior && typeof prior === "object" && !Array.isArray(prior) ? (prior as Record<string, unknown>) : {}),
+			mode,
+		};
+		options.extensionBindings = bindings;
+		return undefined;
+	}
+
+	// Block anything that slips through the active-tool filter, and propagate
+	// the current mode to subagent children.
 	pi.on("tool_call", async (event) => {
 		if (mode === "build") return;
 
+		if (event.toolName === "subagent") {
+			const blocked = handleSubagentCall(event);
+			if (blocked) return blocked;
+		}
+
 		// Enforce the mode's resolved selection (falls back to the read-only
-		// defaults if the selection isn't computed yet, e.g. before restore).
+		// subset of the current active tools if the selection isn't computed
+		// yet, e.g. before restore). The check is strictly selection-based: a
+		// tool deliberately excluded by the mode config stays excluded even if
+		// it advertises readOnlyHint.
 		const allowed = modeAllowedTools ?? new Set(readOnlyToolNames(pi, pi.getActiveTools()));
-		if (!allowed.has(event.toolName) && !isReadOnlyTool(pi, event.toolName)) {
+		if (!allowed.has(event.toolName)) {
 			return {
 				block: true,
 				reason: `Mode "${mode}" is read-only: tool "${event.toolName}" is blocked.\nPress Tab to switch to build mode to make changes.`,
@@ -336,7 +425,12 @@ export default function modesExtension(pi: ExtensionAPI): void {
 			.filter((e: { type: string; customType?: string }) => e.type === "custom" && e.customType === "modes")
 			.pop() as { data?: { mode?: Mode; savedTools?: string[] } } | undefined;
 
-		mode = flagMode ?? last?.data?.mode ?? "build";
+		// Precedence: explicit CLI flag > session restore (the child's own
+		// persisted mode) > parent-propagated binding > build. The persisted mode
+		// is authoritative: if the binding env var ever leaks into a resume, a
+		// child the user switched to a different mode must not be reverted.
+		// Fresh launches have no persisted mode, so the binding still applies.
+		mode = flagMode ?? last?.data?.mode ?? modeFromBindings() ?? "build";
 		savedTools = last?.data?.savedTools;
 
 		applyMode(ctx, false);

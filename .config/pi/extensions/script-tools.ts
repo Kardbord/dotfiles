@@ -459,17 +459,33 @@ function extension(pi: ExtensionAPI) {
 		return msg;
 	}
 
+	let loadPromise: Promise<string> | undefined;
+
+	// Single-flight guard: session_start can fire while the eager load below
+	// is still in flight (loadedOnce is only set at the end). Returning the
+	// in-flight promise keeps loadAll from running twice concurrently on the
+	// shared names/loaded/detectTools state.
+	function ensureLoaded(ctx?: ExtensionCommandContext): Promise<string> {
+		if (!loadPromise) {
+			loadPromise = loadAll(ctx).finally(() => {
+				loadPromise = undefined;
+			});
+		}
+		return loadPromise;
+	}
+
 	// Register during extension load so tools are available immediately.
 	// session_start re-loads if the eager load hasn't finished yet; both are
 	// idempotent (registering the same name replaces the prior definition).
-	void loadAll().catch((err: unknown) => {
+	// ensureLoaded deduplicates concurrent calls (eager load + session_start).
+	void ensureLoaded().catch((err: unknown) => {
 		problems.push(`loadAll failed: ${err instanceof Error ? err.message : String(err)}`);
 	});
 
 	pi.on("session_start", async (_event, ctx) => {
 		if (!loadedOnce) {
 			try {
-				await loadAll();
+				await ensureLoaded();
 			} catch (err) {
 				problems.push(`loadAll failed: ${err instanceof Error ? err.message : String(err)}`);
 			}

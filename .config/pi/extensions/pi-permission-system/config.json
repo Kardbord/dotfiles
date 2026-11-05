@@ -20,6 +20,7 @@
     "ls": "allow",
     "read": "allow",
     "review": "allow",
+    "rm": "ask",
     "subagent": "allow",
     "subagent_supervisor": "allow",
     "subagents_enable": "allow",

@@ -103,7 +103,7 @@
         "model": "~z-ai/glm-flash-latest"
       },
       "reviewer": {
-        "model": "moonshotai/kimi-k2.7-code",
+        "model": "~z-ai/glm-flash-latest",
         "thinking": "high"
       },
       "oracle": {

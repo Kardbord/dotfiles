@@ -23,6 +23,7 @@ _NVIM_REQUIRED_FLATPAKS=(
   "io.github.kardbord.tool.actionlint"
   "io.github.kardbord.tool.clipboard"
   "io.github.kardbord.tool.fd"
+  "io.github.kardbord.tool.fvm"
   "io.github.kardbord.tool.fzf"
   "io.github.kardbord.tool.git"
   "io.github.kardbord.tool.lua"

@@ -61,6 +61,20 @@ _KB_DEV_TOOLS_COMMON_ARGS=(
   --env="FVM_CACHE_PATH=${_KB_XDG_CACHE}/fvm"
   --env="FVM_GIT_CACHE_PATH=${_KB_XDG_CACHE}/fvm_git"
   --env="PUB_CACHE=${_KB_XDG_CACHE}/pub"
+  # Android SDK tooling (extensionless: the cmdline-tools zip is unpacked on
+  # the host into the cache below; sdkmanager-installed components, AVDs, adb
+  # keys, and the Gradle user home are all sdkmanager/gradle-managed mutable
+  # state, so they must live in writable, sandbox-mountable XDG-cache paths —
+  # the same shape as fvm's cache above. ANDROID_HOME et al. must match the
+  # exports in 99-android.sh, which sandboxed sdkmanager/avdmanager/adb/
+  # emulator invocations rely on for their settings.
+  --filesystem=xdg-cache/android-sdk:create
+  --filesystem=xdg-cache/android:create
+  --filesystem=xdg-cache/gradle:create
+  --env="ANDROID_HOME=${_KB_XDG_CACHE}/android-sdk"
+  --env="ANDROID_USER_HOME=${_KB_XDG_CACHE}/android"
+  --env="ANDROID_AVD_HOME=${_KB_XDG_CACHE}/android/avd"
+  --env="GRADLE_USER_HOME=${_KB_XDG_CACHE}/gradle"
 )
 
 [[ -n "${_WSL}" ]] && _KB_DEV_TOOLS_COMMON_ARGS+=(--no-documents-portal)

@@ -40,12 +40,27 @@ _ensure_flatpak() {
   done
 }
 
+# Shared XDG roots for the Dart/Flutter tooling grants and env below.
+_KB_XDG_CACHE="${XDG_CACHE_HOME:-${HOME}/.cache}"
+
 _KB_DEV_TOOLS_COMMON_ARGS=(
   --filesystem=/tmp
   --filesystem=/var/tmp
   --socket=wayland
   --socket=fallback-x11
   --share=ipc
+  # Dart/Flutter tooling (fvm manages all Dart/Flutter installations; its
+  # settings live as env vars in 99-fvm.sh, mirrored into sandboxes here).
+  # Scoped xdg grants are dual-mounted by flatpak: at the host-equivalent path
+  # AND at the sandbox's $XDG_*_HOME, so host and sandboxed fvm see identical
+  # paths. FVM_CACHE_PATH/FVM_GIT_CACHE_PATH must match the exports in 99-fvm.sh
+  # (the in-sandbox fvm has no config file, so these env vars are its settings).
+  --filesystem=xdg-cache/fvm:create
+  --filesystem=xdg-cache/fvm_git:create
+  --filesystem=xdg-cache/pub:create
+  --env="FVM_CACHE_PATH=${_KB_XDG_CACHE}/fvm"
+  --env="FVM_GIT_CACHE_PATH=${_KB_XDG_CACHE}/fvm_git"
+  --env="PUB_CACHE=${_KB_XDG_CACHE}/pub"
 )
 
 [[ -n "${_WSL}" ]] && _KB_DEV_TOOLS_COMMON_ARGS+=(--no-documents-portal)

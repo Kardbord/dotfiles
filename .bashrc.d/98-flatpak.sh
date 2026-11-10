@@ -47,7 +47,7 @@ _KB_DEV_TOOLS_COMMON_ARGS=(
   --filesystem=/tmp
   --filesystem=/var/tmp
   --socket=wayland
-  --socket=fallback-x11
+  --socket=x11
   --share=ipc
   # Dart/Flutter tooling (fvm manages all Dart/Flutter installations; its
   # settings live as env vars in 99-fvm.sh, mirrored into sandboxes here).
